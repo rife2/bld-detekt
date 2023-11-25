@@ -40,15 +40,15 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     private final Collection<String> input_ = new ArrayList<>();
     private final Collection<String> plugins_ = new ArrayList<>();
     private final Collection<DetektReport> report_ = new ArrayList<>();
-    private boolean allRules_ = false;
-    private boolean autoCorrect_ = false;
+    private boolean allRules_;
+    private boolean autoCorrect_;
     private String basePath_;
     private String baseline_;
     private boolean buildUponDefaultConfig_;
     private String configResource_;
     private boolean createBaseline_;
-    private boolean debug_ = false;
-    private boolean disableDefaultRuleSets_ = false;
+    private boolean debug_;
+    private boolean disableDefaultRuleSets_;
     private String excludes_;
     private boolean generateConfig_;
     private String includes_;
@@ -514,9 +514,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Enables parallel compilation and analysis of source files. Do some
-     * benchmarks first before enabling this flag. Heuristics show performance
-     * benefits starting from 2000 lines of Kotlin code.
+     * Extra paths to plugin jars.
      *
      * @param jars one or more jars
      * @return this operation instance
@@ -527,9 +525,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Enables parallel compilation and analysis of source files. Do some
-     * benchmarks first before enabling this flag. Heuristics show performance
-     * benefits starting from 2000 lines of Kotlin code.
+     * Extra paths to plugin jars.
      *
      * @param jars the list of jars
      * @return this operation instance

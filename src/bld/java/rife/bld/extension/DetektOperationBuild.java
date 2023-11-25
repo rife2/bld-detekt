@@ -16,6 +16,7 @@
 
 package rife.bld.extension;
 
+import rife.bld.BuildCommand;
 import rife.bld.Project;
 import rife.bld.publish.PublishDeveloper;
 import rife.bld.publish.PublishLicense;
@@ -93,4 +94,13 @@ public class DetektOperationBuild extends Project {
     public static void main(String[] args) {
         new DetektOperationBuild().start(args);
     }
+
+    @BuildCommand(summary = "Check source code with PMD")
+    public void pmd() throws Exception {
+        new PmdOperation()
+                .fromProject(this)
+                .addRuleSet("config/pmd.xml")
+                .execute();
+    }
+
 }

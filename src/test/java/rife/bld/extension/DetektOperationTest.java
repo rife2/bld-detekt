@@ -29,9 +29,10 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*; // NOPMD
 
 
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 class DetektOperationTest {
     @BeforeAll
     static void beforeAll() {
