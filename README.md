@@ -10,8 +10,7 @@
 
 To install, please refer to the [extensions documentation](https://github.com/rife2/bld/wiki/Extensions).
 
-To check all Kotlin source code located `src/main/kotlin` and `src/test/kotlin`, add the following to your build file
-
+To check all Kotlin source code located `src/main/kotlin` and `src/test/kotlin`, add the following to your build file:
 ```java
 @BuildCommand(summary = "Checks source with Detekt")
 public void detekt() throws ExitStatusException, IOException, InterruptedException {

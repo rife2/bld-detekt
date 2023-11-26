@@ -49,7 +49,8 @@ class DetektOperationTest {
     void testExamplesExecute() {
         var op = new DetektOperation()
                 .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
-                        "Example"));
+                        "Example"))
+                .debug(true);
         assertThatThrownBy(op::execute).isInstanceOf(ExitStatusException.class);
     }
 

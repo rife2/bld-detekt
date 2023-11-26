@@ -1,27 +1,22 @@
 package com.example
 
 class Example {
-    val message: String
+    // https://detekt.dev/docs/rules/naming#variablenaming
+    val Message: String
         get() = "Hello World!"
 
-    // https://detekt.dev/docs/1.22.0/rules/performance#arrayprimitive
-    fun returningFunction(): Array<Double> { return arrayOf() }
-
-    // https://detekt.dev/docs/1.22.0/rules/style#canbenonnullable
-    fun foo(a: Int?) {
-        val b = a!! + 2
-    }
+    // https://detekt.dev/docs/rules/style/#magicnumber
+    val foo = 5
 
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            // https://detekt.dev/docs/1.22.0/rules/naming#booleanpropertynaming
-            val progressBar: Boolean = true
-            // https://detekt.dev/docs/1.22.0/rules/potential-bugs#avoidreferentialequality
-            val areEqual = "aString" === ""
-            println(Example().message)
-            if (false) {
-                // https://detekt.dev/docs/1.22.0/rules/exceptions#exceptionraisedinunexpectedlocation
+            println(Example().Message)
+            // https://detekt.dev/docs/rules/empty-blocks#emptyifblock
+            if (true) {
+            } else {
+                // https://detekt.dev/docs/rules/exceptions#throwingexceptionswithoutmessageorcause
+                // https://detekt.dev/docs/rules/style/#usecheckorerror
                 throw IllegalStateException()
             }
         }
