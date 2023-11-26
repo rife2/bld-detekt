@@ -449,6 +449,15 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
+     * Returns the input paths to analyze.
+     *
+     * @return the input paths
+     */
+    public Collection<String> input() {
+        return input_;
+    }
+
+    /**
      * EXPERIMENTAL: Use a custom JDK home directory to include into the
      * classpath.
      *

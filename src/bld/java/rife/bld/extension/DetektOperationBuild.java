@@ -41,13 +41,11 @@ public class DetektOperationBuild extends Project {
         autoDownloadPurge = true;
         repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
 
+        var detekt =  version(1, 23, 3);
         scope(compile)
                 .include(dependency("com.uwyn.rife2", "bld", version(1, 7, 5)))
-                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli", version(1, 23, 3)))
-//                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-core", version(1, 23, 3)))
-//                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-rules", version(1, 23, 3)))
-//                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-utils", version(1, 23, 3)))
-                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-tooling", version(1, 23, 3)))
+                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli", detekt))
+                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-tooling", detekt))
                 .include(dependency("com.beust", "jcommander", "1.82"))
                 .include(dependency("com.fasterxml:aalto-xml:1.3.2"));
         scope(test)
@@ -96,10 +94,10 @@ public class DetektOperationBuild extends Project {
     }
 
     @BuildCommand(summary = "Check source code with PMD")
-    public void pmd() throws Exception {
+    public void pmd() {
         new PmdOperation()
                 .fromProject(this)
-                .addRuleSet("config/pmd.xml")
+                .ruleSets("config/pmd.xml")
                 .execute();
     }
 

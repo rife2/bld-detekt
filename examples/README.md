@@ -1,4 +1,4 @@
-j## Compile the Kotlin Example
+## Compile the Kotlin Example
 
 ```console
 ./bld compile
@@ -8,6 +8,9 @@ j## Compile the Kotlin Example
 
 ```console
 ./bld detekt
+
+./bld detekt-main
+./bld detekt-test
 ```
 
 ## Generate Detekt baseline
@@ -16,4 +19,4 @@ j## Compile the Kotlin Example
 ./bld detekt-baseline
 ```
 
-The `detekt-baseline.xml` will be created in the project's root directory.
+The `detekt-baseline.xml` file will be created in the project's root directory.

@@ -4,14 +4,10 @@ import rife.bld.BuildCommand;
 import rife.bld.Project;
 import rife.bld.extension.CompileKotlinOperation;
 import rife.bld.extension.DetektOperation;
-import rife.bld.extension.dokka.DokkaOperation;
-import rife.bld.extension.dokka.LoggingLevel;
-import rife.bld.extension.dokka.OutputFormat;
 import rife.bld.operations.exceptions.ExitStatusException;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -49,7 +45,7 @@ public class ExampleBuild extends Project {
         var logger = Logger.getLogger("rife.bld.extension");
         var consoleHandler = new ConsoleHandler();
 
-        // Enable detailed logging for the Kotlin extension
+        // Enable detailed logging
         consoleHandler.setLevel(level);
         logger.addHandler(consoleHandler);
         logger.setLevel(level);
@@ -58,28 +54,41 @@ public class ExampleBuild extends Project {
         new ExampleBuild().start(args);
     }
 
-    @BuildCommand(summary = "Compile the Kotlin project")
+    @BuildCommand(summary = "Compiles the Kotlin project")
     @Override
     public void compile() throws IOException {
-        // The source code located in src/main/kotlin and src/test/kotlin will be compiled
         new CompileKotlinOperation()
                 .fromProject(this)
                 .execute();
     }
 
-    @BuildCommand(summary = "Check source with Detekt")
+    @BuildCommand(summary = "Checks source with Detekt")
     public void detekt() throws ExitStatusException, IOException, InterruptedException {
         new DetektOperation()
                 .fromProject(this)
                 .execute();
     }
 
-    @BuildCommand(value = "detekt-baseline", summary = "Creates a Detekt baseline")
+    @BuildCommand(value = "detekt-baseline", summary = "Creates the Detekt baseline")
     public void detektBaseline() throws ExitStatusException, IOException, InterruptedException {
         new DetektOperation()
                 .fromProject(this)
                 .baseline("detekt-baseline.xml")
                 .createBaseline(true)
                 .execute();
+    }
+
+    @BuildCommand(value = "detekt-main", summary = "Checks main source with Detekt")
+    public void detektMain() throws ExitStatusException, IOException, InterruptedException {
+        var op = new DetektOperation().fromProject(this);
+        op.input().clear();
+        op.input("src/main/kotlin").execute();
+    }
+
+    @BuildCommand(value = "detekt-test", summary = "Checks test source with Detekt")
+    public void detektTest() throws ExitStatusException, IOException, InterruptedException {
+        var op = new DetektOperation().fromProject(this);
+        op.input().clear();
+        op.input("src/test/kotlin").execute();
     }
 }

@@ -1,10 +1,5 @@
 package com.example
 
-import java.io.IOException
-
-/**
- * Example class.
- */
 class Example {
     val message: String
         get() = "Hello World!"

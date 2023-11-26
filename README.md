@@ -13,7 +13,7 @@ To install, please refer to the [extensions documentation](https://github.com/ri
 To check all Kotlin source code located `src/main/kotlin` and `src/test/kotlin`, add the following to your build file
 
 ```java
-@BuildCommand(summary = "Check source with Detekt")
+@BuildCommand(summary = "Checks source with Detekt")
 public void detekt() throws ExitStatusException, IOException, InterruptedException {
     new DetektOperation()
         .fromProject(this)
@@ -25,10 +25,12 @@ public void detekt() throws ExitStatusException, IOException, InterruptedExcepti
 ./bld compile detekt
 ```
 
+- [View Examples Project](https://github.com/rife2/bld-detekt/tree/main/examples)
+
 To generate a Detekt baseline, add the following to your build file:
 
 ```java
-@BuildCommand(value = "detekt-baseline", summary = "Creates a Detekt baseline")
+@BuildCommand(value = "detekt-baseline", summary = "Creates the Detekt baseline")
 public void detektBaseline() throws ExitStatusException, IOException, InterruptedException {
     new DetektOperation()
         .fromProject(this)
@@ -41,5 +43,6 @@ public void detektBaseline() throws ExitStatusException, IOException, Interrupte
 ```console
 ./bld compile detekt-baseline
 ```
+- [View Examples Project](https://github.com/rife2/bld-detekt/tree/main/examples)
 
 Please check the [DetektOperation documentation](https://rife2.github.io/bld-detekt/rife/bld/extension/DetektOperation.html#method-summary) for all available configuration options.
