@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,10 +46,20 @@ class DetektOperationTest {
         logger.setUseParentHandlers(false);
     }
 
+    static void deleteOnExit(File folder) {
+        folder.deleteOnExit();
+        for (var f : Objects.requireNonNull(folder.listFiles())) {
+            if (f.isDirectory()) {
+                deleteOnExit(f);
+            } else {
+                f.deleteOnExit();
+            }
+        }
+    }
+
     @Test
     void testExampleBaseline() throws IOException, ExitStatusException, InterruptedException {
         var tmpDir = Files.createTempDirectory("bld-detekt-").toFile();
-        tmpDir.deleteOnExit();
 
         var baseline = new File(tmpDir, "detekt-baseline.xml");
 
@@ -58,7 +69,11 @@ class DetektOperationTest {
                 .baseline(baseline.getAbsolutePath())
                 .createBaseline(true);
         op.execute();
+
+        deleteOnExit(tmpDir);
+
         assertThat(baseline).exists();
+
     }
 
     @Test
@@ -73,7 +88,6 @@ class DetektOperationTest {
     @Test
     void testExampleReports() throws IOException {
         var tmpDir = Files.createTempDirectory("bld-detekt-").toFile();
-        tmpDir.deleteOnExit();
 
         var html = new File(tmpDir, "report.html");
         var xml = new File(tmpDir, "report.xml");
@@ -91,6 +105,8 @@ class DetektOperationTest {
                 .report(new DetektReport(DetektReportId.SARIF, sarif.getAbsolutePath()));
 
         assertThatThrownBy(op::execute).isInstanceOf(ExitStatusException.class);
+
+        deleteOnExit(tmpDir);
 
         List.of(html, xml, txt, md, sarif).forEach(it -> assertThat(it).exists());
     }

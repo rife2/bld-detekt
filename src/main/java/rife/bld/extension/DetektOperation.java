@@ -557,7 +557,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * benchmarks first before enabling this flag. Heuristics show performance
      * benefits starting from 2000 lines of Kotlin code.
      *
-     * @param parallel{@code true} or {@code false}
+     * @param parallel {@code true} or {@code false}
      * @return this operation instance
      */
     public DetektOperation parallel(boolean parallel) {
