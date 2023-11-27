@@ -29,7 +29,7 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.assertj.core.api.Assertions.*; // NOPMD
+import static org.assertj.core.api.Assertions.*;
 
 
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
@@ -46,12 +46,19 @@ class DetektOperationTest {
     }
 
     @Test
-    void testExamplesExecute() {
+    void testExampleBaseline() throws IOException, ExitStatusException, InterruptedException {
+        var tmpDir = Files.createTempDirectory("bld-detekt-").toFile();
+        tmpDir.deleteOnExit();
+
+        var baseline = new File(tmpDir, "detekt-baseline.xml");
+
         var op = new DetektOperation()
                 .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
                         "Example"))
-                .debug(true);
-        assertThatThrownBy(op::execute).isInstanceOf(ExitStatusException.class);
+                .baseline(baseline.getAbsolutePath())
+                .createBaseline(true);
+        op.execute();
+        assertThat(baseline).exists();
     }
 
     @Test
@@ -89,18 +96,11 @@ class DetektOperationTest {
     }
 
     @Test
-    void testExampleBaseline() throws IOException, ExitStatusException, InterruptedException {
-        var tmpDir = Files.createTempDirectory("bld-detekt-").toFile();
-        tmpDir.deleteOnExit();
-
-        var baseline = new File(tmpDir, "detekt-baseline.xml");
-
+    void testExamplesExecute() {
         var op = new DetektOperation()
                 .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
                         "Example"))
-                .baseline(baseline.getAbsolutePath())
-                .createBaseline(true);
-        op.execute();
-        assertThat(baseline).exists();
+                .debug(true);
+        assertThatThrownBy(op::execute).isInstanceOf(ExitStatusException.class);
     }
 }

@@ -41,15 +41,10 @@ public class DetektOperationBuild extends Project {
         autoDownloadPurge = true;
         repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
 
-        var detekt =  version(1, 23, 3);
         scope(compile)
                 .include(dependency("com.uwyn.rife2", "bld", version(1, 7, 5)))
-                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli", detekt))
-                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-tooling", detekt))
-                .include(dependency("com.beust", "jcommander", "1.82"))
-                .include(dependency("com.fasterxml:aalto-xml:1.3.2"));
+                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli", version(1, 23, 4)));
         scope(test)
-                .include(dependency("com.puppycrawl.tools", "checkstyle", version(10, 12, 5)))
                 .include(dependency("org.junit.jupiter", "junit-jupiter", version(5, 10, 1)))
                 .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1, 10, 1)))
                 .include(dependency("org.assertj", "assertj-core", version(3, 24, 2)));

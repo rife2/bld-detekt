@@ -29,8 +29,12 @@ public class ExampleBuild extends Project {
         autoDownloadPurge = true;
         repositories = List.of(MAVEN_LOCAL, MAVEN_CENTRAL, RIFE2_RELEASES);
 
+        final var kotlin = version(1, 9, 21);
+
         scope(compile)
-                .include(dependency("org.jetbrains.kotlin", "kotlin-stdlib", version(1, 9, 21)));
+                .include(dependency("org.jetbrains.kotlin", "kotlin-stdlib", kotlin))
+                .include(dependency("org.jetbrains.kotlin", "kotlin-stdlib-jdk7", kotlin))
+                .include(dependency("org.jetbrains.kotlin", "kotlin-stdlib-jdk8", kotlin));
         scope(test)
                 .include(dependency("org.jetbrains.kotlin:kotlin-test-junit5:1.9.21"))
                 .include(dependency("org.junit.jupiter", "junit-jupiter", version(5, 10, 1)))
@@ -64,6 +68,7 @@ public class ExampleBuild extends Project {
 
     @BuildCommand(summary = "Checks source with Detekt")
     public void detekt() throws ExitStatusException, IOException, InterruptedException {
+        // The source code located in the project's root will be checked
         new DetektOperation()
                 .fromProject(this)
                 .execute();
@@ -71,6 +76,7 @@ public class ExampleBuild extends Project {
 
     @BuildCommand(value = "detekt-baseline", summary = "Creates the Detekt baseline")
     public void detektBaseline() throws ExitStatusException, IOException, InterruptedException {
+        // The detekt-baseline.xml file will be created in the project's root
         new DetektOperation()
                 .fromProject(this)
                 .baseline("detekt-baseline.xml")
@@ -80,15 +86,19 @@ public class ExampleBuild extends Project {
 
     @BuildCommand(value = "detekt-main", summary = "Checks main source with Detekt")
     public void detektMain() throws ExitStatusException, IOException, InterruptedException {
-        var op = new DetektOperation().fromProject(this);
-        op.input().clear();
-        op.input("src/main/kotlin").execute();
+        // The source code located in src/main/kotlin will be checked
+        new DetektOperation()
+                .fromProject(this)
+                .input("src/main/kotlin")
+                .execute();
     }
 
     @BuildCommand(value = "detekt-test", summary = "Checks test source with Detekt")
     public void detektTest() throws ExitStatusException, IOException, InterruptedException {
-        var op = new DetektOperation().fromProject(this);
-        op.input().clear();
-        op.input("src/test/kotlin").execute();
+        // The source code located in src/test/kotlin will be checked
+        new DetektOperation()
+                .fromProject(this)
+                .input("src/test/kotlin")
+                .execute();
     }
 }

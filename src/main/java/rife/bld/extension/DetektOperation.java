@@ -20,7 +20,6 @@ import rife.bld.BaseProject;
 import rife.bld.operations.AbstractProcessOperation;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,6 +33,46 @@ import java.util.logging.Logger;
  * @since 1.0
  */
 public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
+    private static final List<String> DETEKT_JARS = List.of(
+            "detekt-cli-",
+            "jcommander-",
+            "detekt-core-",
+            "detekt-rules-",
+            "detekt-rules-errorprone-",
+            "detekt-tooling-",
+            "detekt-parser-",
+            "detekt-report-md-",
+            "detekt-metrics-",
+            "detekt-api-",
+            "detekt-psi-utils-",
+            "kotlin-compiler-embeddable-",
+            "kotlin-reflect-",
+            "detekt-report-html-",
+            "detekt-report-txt-",
+            "detekt-report-xml-",
+            "detekt-report-sarif-",
+            "detekt-utils-",
+            "detekt-rules-complexity-",
+            "detekt-rules-coroutines-",
+            "detekt-rules-documentation-",
+            "detekt-rules-empty-",
+            "detekt-rules-exceptions-",
+            "detekt-rules-naming-",
+            "detekt-rules-performance-",
+            "detekt-rules-style-",
+            "sarif4k-jvm-",
+            "kotlinx-serialization-json-jvm-",
+            "kotlinx-serialization-core-jvm-",
+            "kotlin-stdlib-jdk8-",
+            "kotlin-stdlib-jdk7-",
+            "kotlin-stdlib-",
+            "contester-breakpoint-",
+            "kotlin-script-runtime-",
+            "kotlin-daemon-embeddable-",
+            "trove4j-",
+            "annotations-",
+            "snakeyaml-engine-",
+            "kotlinx-html-jvm-");
     private static final Logger LOGGER = Logger.getLogger(DetektReport.class.getName());
     private final Collection<String> classpath_ = new ArrayList<>();
     private final Collection<String> config_ = new ArrayList<>();
@@ -71,10 +110,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Allow rules to auto correct code if they support it. The default rule
-     * sets do NOT support auto correcting and won't change any line in the
-     * users code base. However custom rules can be written to support auto
-     * correcting. The additional 'formatting' rule set, added with
+     * Allow rules to autocorrect code if they support it. The default rule
+     * sets do NOT support autocorrecting and won't change any line in the
+     * users code base. However, custom rules can be written to support
+     * autocorrecting. The additional 'formatting' rule set, added with
      * {@link #plugins(String...) Plugins}, does support it and needs this flag.
      *
      * @param autoCorrect {@code true} or {@code false}
@@ -86,7 +125,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Specifies a directory as the base path. Currently it impacts all file
+     * Specifies a directory as the base path. Currently, it impacts all file
      * paths in the formatted reports. File paths in console output and txt
      * report are not affected and remain as absolute paths.
      *
@@ -124,8 +163,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * EXPERIMENTAL: Paths where to find user class files and depending jar
-     * files. Used for type resolution.
+     * EXPERIMENTAL: Paths where to find user class files and depending jar files.
+     * Used for type resolution.
      *
      * @param paths one or more files
      * @return this operation instance
@@ -136,8 +175,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * EXPERIMENTAL: Paths where to find user class files and depending jar
-     * files. Used for type resolution.
+     * EXPERIMENTAL: Paths where to find user class files and depending jar files.
+     * Used for type resolution.
      *
      * @param paths the list of files
      * @return this operation instance
@@ -238,7 +277,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         final List<String> args = new ArrayList<>();
         args.add(javaTool());
         args.add("-cp");
-        args.add(Path.of(project_.libBldDirectory().getAbsolutePath(), "*").toString());
+        args.add(getDetektJarList(project_.libBldDirectory()));
         args.add("io.gitlab.arturbosch.detekt.cli.Main");
 
         // all-rules
@@ -252,13 +291,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         }
 
         // base-path
-        if (basePath_ != null) {
+        if (isNotBlank(basePath_)) {
             args.add("--base-path");
             args.add(basePath_);
         }
 
         // baseline
-        if (baseline_ != null) {
+        if (isNotBlank(baseline_)) {
             args.add("--baseline");
             args.add(baseline_);
         }
@@ -281,7 +320,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         }
 
         // config-resource
-        if (configResource_ != null) {
+        if (isNotBlank(configResource_)) {
             args.add("--config-resource");
             args.add(configResource_);
         }
@@ -302,9 +341,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         }
 
         // excludes
-        if (excludes_ != null) {
+        if (isNotBlank(excludes_)) {
             args.add("--excludes");
-
+            args.add(excludes_);
         }
 
         // generate-config
@@ -313,7 +352,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         }
 
         // includes
-        if (includes_ != null) {
+        if (isNotBlank(includes_)) {
             args.add("--includes");
             args.add(includes_);
         }
@@ -325,19 +364,19 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         }
 
         // jdk-home
-        if (jdkHome_ != null) {
+        if (isNotBlank(jdkHome_)) {
             args.add("--jdk-home");
             args.add(jdkHome_);
         }
 
         // jvm-target
-        if (jvmTarget_ != null) {
+        if (isNotBlank(jvmTarget_)) {
             args.add("--jvm-target");
             args.add(jvmTarget_);
         }
 
         // language-version
-        if (languageVersion_ != null) {
+        if (isNotBlank(languageVersion_)) {
             args.add("--language-version");
             args.add(languageVersion_);
         }
@@ -377,8 +416,11 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     /**
      * Configures the operation from a {@link BaseProject}.
      * <p>
-     * Sets the {@link #input input} to {@code src/main/kotlin}, {@code src/test/kotlin} and {@code detekt-baseline.xml}
-     * if they exist.
+     * Sets the following:
+     * <ul>
+     *     <li>{@link #baseline baseline} to {@code detekt-baseline.xml}, if it exists</li>
+     *     <li>{@link #excludes excludes} to exclude {@code build} and {@code resources} directories</li>
+     * </ul>
      *
      * @param project the project to configure the operation from
      * @return this operation instance
@@ -386,18 +428,11 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     @Override
     public DetektOperation fromProject(BaseProject project) {
         project_ = project;
-        var main = new File(project.srcMainDirectory(), "kotlin");
-        if (main.exists()) {
-            input_.add(main.getAbsolutePath());
-        }
-        var test = new File(project.srcTestDirectory(), "kotlin");
-        if (test.exists()) {
-            input_.add(test.getAbsolutePath());
-        }
         var baseline = new File(project.workDirectory(), "detekt-baseline.xml");
         if (baseline.exists()) {
             baseline_ = baseline.getAbsolutePath();
         }
+        excludes(".*/build/.*,.*/resources/.*");
         return this;
     }
 
@@ -412,6 +447,30 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     public DetektOperation generateConfig(boolean generate) {
         generateConfig_ = generate;
         return this;
+    }
+
+    /*
+     * Retrieves the matching JARs files from the given directory.
+     */
+    private String getDetektJarList(File directory) {
+        var jars = new ArrayList<String>();
+
+        if (directory.isDirectory()) {
+            var files = directory.listFiles();
+            if (files != null) {
+                for (var f : files) {
+                    if (!f.getName().endsWith("-sources.jar") && !f.getName().endsWith("-javadoc.jar")) {
+                        for (var m : DETEKT_JARS) {
+                            if (f.getName().startsWith(m)) {
+                                jars.add(f.getAbsolutePath());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return String.join(":", jars);
     }
 
     /**
@@ -455,6 +514,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     public Collection<String> input() {
         return input_;
+    }
+
+    /*
+     * Determines if a string is not blank.
+     */
+    private boolean isNotBlank(String s) {
+        return s != null && !s.isBlank();
     }
 
     /**
@@ -545,7 +611,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Generates a report for given 'report-id' and stores it on given 'path'.
+     * Generates a report for given {@link DetektReportId report-id} and stores it on given 'path'.
      *
      * @param reports one or more reports
      * @return this operation instance
