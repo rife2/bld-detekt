@@ -34,45 +34,22 @@ import java.util.logging.Logger;
  */
 public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     private static final List<String> DETEKT_JARS = List.of(
-            "detekt-cli-",
-            "jcommander-",
-            "detekt-core-",
-            "detekt-rules-",
-            "detekt-rules-errorprone-",
-            "detekt-tooling-",
-            "detekt-parser-",
-            "detekt-report-md-",
-            "detekt-metrics-",
-            "detekt-api-",
-            "detekt-psi-utils-",
-            "kotlin-compiler-embeddable-",
-            "kotlin-reflect-",
-            "detekt-report-html-",
-            "detekt-report-txt-",
-            "detekt-report-xml-",
-            "detekt-report-sarif-",
-            "detekt-utils-",
-            "detekt-rules-complexity-",
-            "detekt-rules-coroutines-",
-            "detekt-rules-documentation-",
-            "detekt-rules-empty-",
-            "detekt-rules-exceptions-",
-            "detekt-rules-naming-",
-            "detekt-rules-performance-",
-            "detekt-rules-style-",
-            "sarif4k-jvm-",
-            "kotlinx-serialization-json-jvm-",
-            "kotlinx-serialization-core-jvm-",
-            "kotlin-stdlib-jdk8-",
-            "kotlin-stdlib-jdk7-",
-            "kotlin-stdlib-",
-            "contester-breakpoint-",
-            "kotlin-script-runtime-",
-            "kotlin-daemon-embeddable-",
-            "trove4j-",
             "annotations-",
+            "contester-breakpoint-",
+            "detekt-",
+            "jcommander-",
+            "kotlin-compiler-embeddable-",
+            "kotlin-daemon-embeddable-",
+            "kotlin-reflect-",
+            "kotlin-script-runtime-",
+            "kotlin-stdlib-",
+            "kotlin-stdlib-jdk7-",
+            "kotlin-stdlib-jdk8-",
+            "kotlinx-html-jvm-",
+            "kotlinx-serialization-",
+            "sarif4k-jvm-",
             "snakeyaml-engine-",
-            "kotlinx-html-jvm-");
+            "trove4j-");
     private static final Logger LOGGER = Logger.getLogger(DetektReport.class.getName());
     private final Collection<String> classpath_ = new ArrayList<>();
     private final Collection<String> config_ = new ArrayList<>();
@@ -310,13 +287,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         // classpath
         if (!classpath_.isEmpty()) {
             args.add("--classpath");
-            args.add(String.join(File.pathSeparator, classpath_));
+            args.add(String.join(File.pathSeparator, classpath_.stream().filter(this::isNotBlank).toList()));
         }
 
         // config
         if (!config_.isEmpty()) {
             args.add("-config");
-            args.add(String.join(";", config_));
+            args.add(String.join(";", config_.stream().filter(this::isNotBlank).toList()));
         }
 
         // config-resource
@@ -360,7 +337,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         // input
         if (!input_.isEmpty()) {
             args.add("--input");
-            args.add(String.join(",", input_));
+            args.add(String.join(",", input_.stream().filter(this::isNotBlank).toList()));
         }
 
         // jdk-home
@@ -395,7 +372,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         // plugins
         if (!plugins_.isEmpty()) {
             args.add("--plugins");
-            args.add(String.join(".", plugins_));
+            args.add(String.join(",", plugins_.stream().filter(this::isNotBlank).toList()));
         }
 
         // report
@@ -407,7 +384,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         }
 
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.join(" ", args));
+            LOGGER.fine(String.join(" ", args.stream().filter(this::isNotBlank).toList()));
         }
 
         return args;
