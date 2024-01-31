@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,12 @@ public class DetektOperationBuild extends Project {
         repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
 
         scope(compile)
-                .include(dependency("com.uwyn.rife2", "bld", version(1, 7, 5)))
+                .include(dependency("com.uwyn.rife2", "bld", version(1, 8, 0)))
                 .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli", version(1, 23, 4)));
         scope(test)
                 .include(dependency("org.junit.jupiter", "junit-jupiter", version(5, 10, 1)))
                 .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1, 10, 1)))
-                .include(dependency("org.assertj", "assertj-core", version(3, 24, 2)));
+                .include(dependency("org.assertj", "assertj-core", version(3, 25, 2)));
         javadocOperation()
                 .javadocOptions()
                 .author()
