@@ -34,7 +34,7 @@ public class DetektOperationBuild extends Project {
     public DetektOperationBuild() {
         pkg = "rife.bld.extension";
         name = "DetektOperation";
-        version = version(0, 9, 2, "SNAPSHOT");
+        version = version(0, 9, 2);
 
         javaRelease = 17;
         downloadSources = true;
@@ -42,7 +42,7 @@ public class DetektOperationBuild extends Project {
         repositories = List.of(MAVEN_CENTRAL, RIFE2_RELEASES);
 
         scope(compile)
-                .include(dependency("com.uwyn.rife2", "bld", version(1, 8, 0)))
+                .include(dependency("com.uwyn.rife2", "bld", version(1, 9, 0)))
                 .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli", version(1, 23, 5)));
         scope(test)
                 .include(dependency("org.junit.jupiter", "junit-jupiter", version(5, 10, 2)))
