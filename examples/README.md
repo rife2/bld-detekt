@@ -1,4 +1,4 @@
-## Compile the Kotlin Example
+## Compile the example
 
 ```console
 ./bld compile
