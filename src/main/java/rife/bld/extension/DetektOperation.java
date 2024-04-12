@@ -18,8 +18,11 @@ package rife.bld.extension;
 
 import rife.bld.BaseProject;
 import rife.bld.operations.AbstractProcessOperation;
+import rife.bld.operations.exceptions.ExitStatusException;
+import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -239,6 +242,22 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     public DetektOperation excludes(String patterns) {
         excludes_ = patterns;
         return this;
+    }
+
+    /**
+     * Performs the operation.
+     *
+     * @throws InterruptedException    when the operation was interrupted
+     * @throws IOException             when an exception occurred during the execution of the process
+     * @throws FileUtilsErrorException when an exception occurred during the retrieval of the operation output
+     * @throws ExitStatusException     when the exit status was changed during the operation
+     */
+    @Override
+    public void execute() throws IOException, FileUtilsErrorException, InterruptedException, ExitStatusException {
+        super.execute();
+        if (successful_ && LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.info("Detekt executed successfully.");
+        }
     }
 
     /**
