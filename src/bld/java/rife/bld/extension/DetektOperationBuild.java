@@ -34,7 +34,7 @@ public class DetektOperationBuild extends Project {
     public DetektOperationBuild() {
         pkg = "rife.bld.extension";
         name = "DetektOperation";
-        version = version(0, 9, 3);
+        version = version(0, 9, 4, "SNAPSHOT");
 
         javaRelease = 17;
         downloadSources = true;
@@ -72,7 +72,7 @@ public class DetektOperationBuild extends Project {
                 .license(
                         new PublishLicense()
                                 .name("The Apache License, Version 2.0")
-                                .url("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                                .url("https://www.apache.org/licenses/LICENSE-2.0.txt")
                 )
                 .scm(
                         new PublishScm()
