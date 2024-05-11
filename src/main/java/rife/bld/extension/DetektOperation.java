@@ -256,7 +256,12 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     public void execute() throws IOException, FileUtilsErrorException, InterruptedException, ExitStatusException {
         super.execute();
         if (successful_ && LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("Detekt executed successfully.");
+            if (createBaseline_) {
+                LOGGER.info("Detekt baseline successfully generated: "
+                        + "file://" + new File(baseline_).toURI().getPath());
+            } else {
+                LOGGER.info("Detekt executed successfully.");
+            }
         }
     }
 
