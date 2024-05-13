@@ -34,7 +34,7 @@ public class DetektOperationBuild extends Project {
     public DetektOperationBuild() {
         pkg = "rife.bld.extension";
         name = "DetektOperation";
-        version = version(0, 9, 4, "SNAPSHOT");
+        version = version(0, 9, 4);
 
         javaRelease = 17;
         downloadSources = true;
@@ -88,12 +88,11 @@ public class DetektOperationBuild extends Project {
         new DetektOperationBuild().start(args);
     }
 
-    @BuildCommand(summary = "Check source code with PMD")
+    @BuildCommand(summary = "Checks source code with PMD")
     public void pmd() {
         new PmdOperation()
                 .fromProject(this)
                 .ruleSets("config/pmd.xml")
                 .execute();
     }
-
 }

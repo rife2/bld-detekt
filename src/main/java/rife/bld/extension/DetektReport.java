@@ -17,7 +17,7 @@
 package rife.bld.extension;
 
 /**
- * Defines a report for given report-id to be stores in the given path.
+ * Defines a report for the given report-id to be stored on the given path.
  *
  * @param id   the report-id
  * @param path the given path
