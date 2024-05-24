@@ -257,10 +257,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         super.execute();
         if (successful_ && LOGGER.isLoggable(Level.INFO)) {
             if (createBaseline_) {
-                LOGGER.info("Detekt baseline successfully generated: "
+                LOGGER.info("Detekt baseline generated successfully: "
                         + "file://" + new File(baseline_).toURI().getPath());
             } else {
-                LOGGER.info("Detekt executed successfully.");
+                LOGGER.info("Detekt operation finished successfully.");
             }
         }
     }
