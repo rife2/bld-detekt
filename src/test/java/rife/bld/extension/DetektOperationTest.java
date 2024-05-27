@@ -63,8 +63,8 @@ class DetektOperationTest {
         var params = List.of(
                 "--all-rules",
                 "--auto-correct",
-                "--base-path",
                 "--baseline",
+                "--base-path",
                 "--build-upon-default-config",
                 "--classpath",
                 "--config",
@@ -78,7 +78,6 @@ class DetektOperationTest {
                 "--input",
                 "--jdk-home",
                 "--jvm-target",
-                "--language-version",
                 "--max-issues",
                 "--parallel",
                 "--plugins",
