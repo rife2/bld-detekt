@@ -34,7 +34,7 @@ public class DetektOperationBuild extends Project {
     public DetektOperationBuild() {
         pkg = "rife.bld.extension";
         name = "DetektOperation";
-        version = version(0, 9, 4);
+        version = version(0, 9, 5, "SNAPSHOT");
 
         javaRelease = 17;
         downloadSources = true;

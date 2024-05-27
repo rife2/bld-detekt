@@ -402,7 +402,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         // report
         if (!report_.isEmpty()) {
             report_.forEach(it -> {
-                args.add("-r");
+                args.add("--report");
                 args.add(it.id().name().toLowerCase() + ":" + it.path());
             });
         }

@@ -18,6 +18,7 @@ package rife.bld.extension;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import rife.bld.BaseProject;
 import rife.bld.blueprints.BaseProjectBlueprint;
 import rife.bld.operations.exceptions.ExitStatusException;
 
@@ -54,6 +55,74 @@ class DetektOperationTest {
             } else {
                 f.deleteOnExit();
             }
+        }
+    }
+
+    @Test
+    void testCheckAllParameters() {
+        var params = List.of(
+                "--all-rules",
+                "--auto-correct",
+                "--base-path",
+                "--baseline",
+                "--build-upon-default-config",
+                "--classpath",
+                "--config",
+                "--config-resource",
+                "--create-baseline",
+                "--debug",
+                "--disable-default-rulesets",
+                "--excludes",
+                "--generate-config",
+                "--includes",
+                "--input",
+                "--jdk-home",
+                "--jvm-target",
+                "--language-version",
+                "--max-issues",
+                "--parallel",
+                "--plugins",
+                "--report"
+        );
+
+        var args = new DetektOperation()
+                .fromProject(new BaseProject())
+                .allRules(true)
+                .autoCorrect(true)
+                .basePath("basePath")
+                .baseline("baseline")
+                .buildUponDefaultConfig(true)
+                .classPath("classpath")
+                .classPath(List.of("path2", "path3"))
+                .config("config")
+                .config(List.of("config2", "config4"))
+                .configResource("configResource")
+                .createBaseline(true)
+                .debug(true)
+                .disableDefaultRuleSets(true)
+                .excludes("excludes")
+                .generateConfig(true)
+                .includes("patterns")
+                .input("input")
+                .jdkHome("jdkHome")
+                .jvmTarget("jvmTarget")
+                .languageVersion("languageVersion")
+                .maxIssues(10)
+                .parallel(true)
+                .plugins("jars")
+                .plugins(List.of("jars2", "jar3"))
+                .report(new DetektReport(DetektReportId.HTML, "reports"))
+                .executeConstructProcessCommandList();
+
+        for (var p : params) {
+            var found = false;
+            for (var a : args) {
+                if (a.startsWith(p)) {
+                    found = true;
+                    break;
+                }
+            }
+            assertThat(found).as(p + " not found.").isTrue();
         }
     }
 
