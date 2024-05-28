@@ -25,6 +25,7 @@ import rife.bld.operations.exceptions.ExitStatusException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.ConsoleHandler;
@@ -59,30 +60,10 @@ class DetektOperationTest {
     }
 
     @Test
-    void testCheckAllParameters() {
-        var params = List.of(
-                "--all-rules",
-                "--auto-correct",
-                "--baseline",
-                "--base-path",
-                "--build-upon-default-config",
-                "--classpath",
-                "--config",
-                "--config-resource",
-                "--create-baseline",
-                "--debug",
-                "--disable-default-rulesets",
-                "--excludes",
-                "--generate-config",
-                "--includes",
-                "--input",
-                "--jdk-home",
-                "--jvm-target",
-                "--max-issues",
-                "--parallel",
-                "--plugins",
-                "--report"
-        );
+    void testCheckAllParameters() throws IOException {
+        var params = Files.readAllLines(Paths.get("src", "test", "resources", "detekt-args.txt"));
+
+        assertThat(params).isNotEmpty();
 
         var args = new DetektOperation()
                 .fromProject(new BaseProject())
