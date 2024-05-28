@@ -95,4 +95,15 @@ public class DetektOperationBuild extends Project {
                 .ruleSets("config/pmd.xml")
                 .execute();
     }
+
+    @Override
+    public void test() throws Exception {
+        new ExecOperation()
+                .fromProject(this)
+                .command("scripts/cliargs.sh")
+                .execute();
+        super.test();
+    }
+
+
 }

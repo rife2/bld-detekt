@@ -61,11 +61,11 @@ class DetektOperationTest {
 
     @Test
     void testCheckAllParameters() throws IOException {
-        var params = Files.readAllLines(Paths.get("src", "test", "resources", "detekt-args.txt"));
+        var args = Files.readAllLines(Paths.get("src", "test", "resources", "detekt-args.txt"));
 
-        assertThat(params).isNotEmpty();
+        assertThat(args).isNotEmpty();
 
-        var args = new DetektOperation()
+        var params = new DetektOperation()
                 .fromProject(new BaseProject())
                 .allRules(true)
                 .autoCorrect(true)
@@ -94,9 +94,9 @@ class DetektOperationTest {
                 .report(new DetektReport(DetektReportId.HTML, "reports"))
                 .executeConstructProcessCommandList();
 
-        for (var p : params) {
+        for (var p : args) {
             var found = false;
-            for (var a : args) {
+            for (var a : params) {
                 if (a.startsWith(p)) {
                     found = true;
                     break;
