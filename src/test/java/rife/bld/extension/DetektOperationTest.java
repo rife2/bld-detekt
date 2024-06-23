@@ -36,7 +36,6 @@ import java.util.logging.Logger;
 
 import static org.assertj.core.api.Assertions.*;
 
-
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 class DetektOperationTest {
     @BeforeAll
@@ -67,34 +66,55 @@ class DetektOperationTest {
 
         assertThat(args).isNotEmpty();
 
-        var params = new DetektOperation()
+        var op = new DetektOperation()
                 .fromProject(new BaseProject())
                 .allRules(true)
                 .autoCorrect(true)
                 .basePath("basePath")
+                .basePath(new File("basePath"))
                 .baseline("baseline")
                 .buildUponDefaultConfig(true)
-                .classPath("classpath")
-                .classPath(List.of("path2", "path3"))
-                .config("config")
-                .config(List.of("config2", "config4"))
+                .classPath(new File("path1"))
+                .classPath("path2", "path3")
+                .classPath(List.of(new File("path4"), new File("path5")))
+                .config(new File("config1"))
+                .config("config2", "config3")
+                .config(List.of(new File("config4"), new File("config5")))
                 .configResource("configResource")
+                .configResource(new File("configResource"))
                 .createBaseline(true)
                 .debug(true)
                 .disableDefaultRuleSets(true)
-                .excludes("excludes")
+                .excludes(List.of("excludes1", "excludes2"))
+                .excludes("excludes3", "excludes4")
                 .generateConfig(true)
-                .includes("patterns")
-                .input("input")
+                .includes(List.of("includes1", "includes2"))
+                .includes("includes3", "includes4", "includes5")
+                .input(new File("input1"))
+                .input("input2", "input3")
+                .input(List.of(new File("input4"), new File("input5")))
                 .jdkHome("jdkHome")
                 .jvmTarget("jvmTarget")
                 .languageVersion("languageVersion")
                 .maxIssues(10)
                 .parallel(true)
-                .plugins("jars")
-                .plugins(List.of("jars2", "jar3"))
-                .report(new DetektReport(DetektReportId.HTML, "reports"))
-                .executeConstructProcessCommandList();
+                .plugins(new File("jar1"))
+                .plugins("jar2", "jar3")
+                .plugins(List.of(new File("jar4"), new File("jar5")))
+                .report(new Report(ReportId.HTML, "reports"));
+
+        assertThat(op.excludes()).as("excludes[]").containsExactly(".*/build/.*", ".*/resources/.*",
+                "excludes1", "excludes2", "excludes3", "excludes4");
+
+        for (var i = 1; i < 6; i++) {
+            assertThat(op.classPath()).as("classPath[" + i + ']').hasSize(5).contains(new File("path" + i));
+            assertThat(op.config()).as("config["  + i + ']').hasSize(5).contains(new File("config" + i));
+            assertThat(op.includes()).as("includes["  + i + ']').hasSize(5).contains("includes" + i);
+            assertThat(op.input()).as("input["  + i + ']').hasSize(5).contains(new File("input" + i));
+            assertThat(op.plugins()).as("plugins["  + i + ']').hasSize(5).contains(new File("jar" + i));
+        }
+
+        var params = op.executeConstructProcessCommandList();
 
         for (var p : args) {
             var found = false;
@@ -117,7 +137,7 @@ class DetektOperationTest {
         var op = new DetektOperation()
                 .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
                         "Example"))
-                .baseline(baseline.getAbsolutePath())
+                .baseline(baseline)
                 .createBaseline(true);
         op.execute();
 

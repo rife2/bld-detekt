@@ -17,6 +17,8 @@
 package rife.bld.extension;
 
 import rife.bld.BaseProject;
+import rife.bld.extension.detekt.Report;
+import rife.bld.extension.detekt.ReportId;
 import rife.bld.operations.AbstractProcessOperation;
 import rife.bld.operations.exceptions.ExitStatusException;
 import rife.tools.exceptions.FileUtilsErrorException;
@@ -24,6 +26,7 @@ import rife.tools.exceptions.FileUtilsErrorException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -53,12 +56,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             "sarif4k-jvm-",
             "snakeyaml-engine-",
             "trove4j-");
-    private static final Logger LOGGER = Logger.getLogger(DetektReport.class.getName());
-    private final Collection<String> classpath_ = new ArrayList<>();
-    private final Collection<String> config_ = new ArrayList<>();
-    private final Collection<String> input_ = new ArrayList<>();
-    private final Collection<String> plugins_ = new ArrayList<>();
-    private final Collection<DetektReport> report_ = new ArrayList<>();
+    private static final Logger LOGGER = Logger.getLogger(Report.class.getName());
+    private final Collection<File> classpath_ = new ArrayList<>();
+    private final Collection<File> config_ = new ArrayList<>();
+    private final Collection<String> excludes_ = new ArrayList<>();
+    private final Collection<File> input_ = new ArrayList<>();
+    private final Collection<File> plugins_ = new ArrayList<>();
+    private final Collection<Report> report_ = new ArrayList<>();
     private boolean allRules_;
     private boolean autoCorrect_;
     private String basePath_;
@@ -68,9 +72,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     private boolean createBaseline_;
     private boolean debug_;
     private boolean disableDefaultRuleSets_;
-    private String excludes_;
     private boolean generateConfig_;
-    private String includes_;
+    private final Collection<String> includes_ = new ArrayList<>();
     private String jdkHome_;
     private String jvmTarget_;
     private String languageVersion_;
@@ -118,6 +121,19 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
+     * Specifies a directory as the base path. Currently, it impacts all file
+     * paths in the formatted reports. File paths in console output and txt
+     * report are not affected and remain as absolute paths.
+     *
+     * @param path the directory path
+     * @return this operation instance
+     */
+    public DetektOperation basePath(File path) {
+        basePath_ = path.getAbsolutePath();
+        return this;
+    }
+
+    /**
      * If a baseline xml file is passed in, only new code smells not in the
      * baseline are printed in the console.
      *
@@ -126,6 +142,18 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     public DetektOperation baseline(String baseline) {
         baseline_ = baseline;
+        return this;
+    }
+
+    /**
+     * If a baseline xml file is passed in, only new code smells not in the
+     * baseline are printed in the console.
+     *
+     * @param baseline the baseline xml file
+     * @return this operation instance
+     */
+    public DetektOperation baseline(File baseline) {
+        baseline_ = baseline.getAbsolutePath();
         return this;
     }
 
@@ -143,49 +171,91 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * EXPERIMENTAL: Paths where to find user class files and depending jar files.
+     * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
+     * Used for type resolution.
+     *
+     * @param paths one or more files
+     * @return this operation instance
+     */
+    public DetektOperation classPath(File... paths) {
+        classpath_.addAll(List.of(paths));
+        return this;
+    }
+
+    /**
+     * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
      * Used for type resolution.
      *
      * @param paths one or more files
      * @return this operation instance
      */
     public DetektOperation classPath(String... paths) {
-        classpath_.addAll(List.of(paths));
+        classpath_.addAll(Arrays.stream(paths).map(File::new).toList());
         return this;
     }
 
+
     /**
-     * EXPERIMENTAL: Paths where to find user class files and depending jar files.
+     * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
      * Used for type resolution.
      *
-     * @param paths the list of files
+     * @param paths the paths
      * @return this operation instance
      */
-    public DetektOperation classPath(Collection<String> paths) {
+    public DetektOperation classPath(Collection<File> paths) {
         classpath_.addAll(paths);
         return this;
     }
 
     /**
-     * Path to the config file ({@code path/to/config.yml}).
+     * Paths where to find user class files and jar dependencies.
+     *
+     * @return the paths
+     */
+    public Collection<File> classPath() {
+        return classpath_;
+    }
+
+    /**
+     * Paths to the config files ({@code path/to/config.yml}).
      *
      * @param configs one or more config files
      * @return this operation instance
      */
-    public DetektOperation config(String... configs) {
+    public DetektOperation config(File... configs) {
         config_.addAll(List.of(configs));
         return this;
     }
 
     /**
-     * Path to the config file ({@code path/to/config.yml}).
+     * Paths to the config files ({@code path/to/config.yml}).
      *
-     * @param configs the list pf config files
+     * @param configs one or more config files
      * @return this operation instance
      */
-    public DetektOperation config(Collection<String> configs) {
+    public DetektOperation config(String... configs) {
+        config_.addAll(Arrays.stream(configs).map(File::new).toList());
+        return this;
+    }
+
+    /**
+     * Paths to the config files ({@code path/to/config.yml}).
+     *
+     * @param configs the config files
+     * @return this operation instance
+     */
+    public DetektOperation config(Collection<File> configs) {
         config_.addAll(configs);
         return this;
+    }
+
+    /**
+     * Paths to config files.
+     *
+     * @return the config files paths.
+     */
+    public Collection<File> config() {
+        return config_;
     }
 
     /**
@@ -196,6 +266,17 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     public DetektOperation configResource(String resource) {
         configResource_ = resource;
+        return this;
+    }
+
+    /**
+     * Path to the config resource on detekt's classpath ({@code path/to/config.yml}).
+     *
+     * @param resource the config resource path
+     * @return this operation instance
+     */
+    public DetektOperation configResource(File resource) {
+        configResource_ = resource.getAbsolutePath();
         return this;
     }
 
@@ -236,12 +317,32 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     /**
      * Globbing patterns describing paths to exclude from the analysis.
      *
-     * @param patterns the patterns
+     * @param patterns one or more pattern
      * @return this operation instance
      */
-    public DetektOperation excludes(String patterns) {
-        excludes_ = patterns;
+    public DetektOperation excludes(String... patterns) {
+        excludes_.addAll(List.of(patterns));
         return this;
+    }
+
+    /**
+     * Globbing patterns describing paths to exclude from the analysis.
+     *
+     * @param patterns a collection of patterns
+     * @return this operation instance
+     */
+    public DetektOperation excludes(Collection<String> patterns) {
+        excludes_.addAll(patterns);
+        return this;
+    }
+
+    /**
+     * Returns the globbing patterns describing paths to exclude from the analysis.
+     *
+     * @return the globbing patterns
+     */
+    public Collection<String> excludes() {
+        return excludes_;
     }
 
     /**
@@ -311,13 +412,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         // classpath
         if (!classpath_.isEmpty()) {
             args.add("--classpath");
-            args.add(String.join(File.pathSeparator, classpath_.stream().filter(this::isNotBlank).toList()));
+            args.add(String.join(File.pathSeparator, classpath_.stream().map(File::getAbsolutePath).toList()));
         }
 
         // config
         if (!config_.isEmpty()) {
             args.add("-config");
-            args.add(String.join(";", config_.stream().filter(this::isNotBlank).toList()));
+            args.add(String.join(";", config_.stream().map(File::getAbsolutePath).toList()));
         }
 
         // config-resource
@@ -342,9 +443,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         }
 
         // excludes
-        if (isNotBlank(excludes_)) {
+        if (!excludes_.isEmpty()) {
             args.add("--excludes");
-            args.add(excludes_);
+            args.add(String.join(",", excludes_));
         }
 
         // generate-config
@@ -353,15 +454,15 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         }
 
         // includes
-        if (isNotBlank(includes_)) {
+        if (!includes_.isEmpty()) {
             args.add("--includes");
-            args.add(includes_);
+            args.add(String.join(",", includes_));
         }
 
         // input
         if (!input_.isEmpty()) {
             args.add("--input");
-            args.add(String.join(",", input_.stream().filter(this::isNotBlank).toList()));
+            args.add(String.join(",", input_.stream().map(File::getAbsolutePath).toList()));
         }
 
         // jdk-home
@@ -396,7 +497,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         // plugins
         if (!plugins_.isEmpty()) {
             args.add("--plugins");
-            args.add(String.join(",", plugins_.stream().filter(this::isNotBlank).toList()));
+            args.add(String.join(",", plugins_.stream().map(File::getAbsolutePath).toList()));
         }
 
         // report
@@ -433,7 +534,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         if (baseline.exists()) {
             baseline_ = baseline.getAbsolutePath();
         }
-        excludes(".*/build/.*,.*/resources/.*");
+        excludes(".*/build/.*", ".*/resources/.*");
         return this;
     }
 
@@ -476,23 +577,44 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
     /**
      * Globbing patterns describing paths to include in the analysis. Useful in
-     * combination with {@link #excludes(String) excludes} patterns.
+     * combination with {@link #excludes() excludes} patterns.
      *
-     * @param patterns the patterns
+     * @param patterns one or more patterns
      * @return this operation instance
      */
-    public DetektOperation includes(String patterns) {
-        includes_ = patterns;
+    public DetektOperation includes(String... patterns) {
+        includes_.addAll(List.of(patterns));
         return this;
+    }
+
+    /**
+     * Globbing patterns describing paths to include in the analysis. Useful in
+     * combination with {@link #excludes() excludes} patterns.
+     *
+     * @param patterns a collection of patterns
+     * @return this operation instance
+     */
+    public DetektOperation includes(Collection<String> patterns) {
+        includes_.addAll(patterns);
+        return this;
+    }
+
+    /**
+     * Returns the globbing patterns describing paths to include in the analysis.
+     *
+     * @return the globbing patterns
+     */
+    public Collection<String> includes() {
+        return includes_;
     }
 
     /**
      * Input paths to analyze. If not specified the current working directory is used.
      *
-     * @param paths the list of paths
+     * @param paths the paths
      * @return this operation instance
      */
-    public DetektOperation input(Collection<String> paths) {
+    public DetektOperation input(Collection<File> paths) {
         input_.addAll(paths);
         return this;
     }
@@ -504,16 +626,28 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation input(String... paths) {
+        input_.addAll(Arrays.stream(paths).map(File::new).toList());
+        return this;
+    }
+
+    /**
+     * Input paths to analyze. If not specified the current working directory is used.
+     *
+     * @param paths one or more paths
+     * @return this operation instance
+     */
+    public DetektOperation input(File... paths) {
         input_.addAll(List.of(paths));
         return this;
     }
+
 
     /**
      * Returns the input paths to analyze.
      *
      * @return the input paths
      */
-    public Collection<String> input() {
+    public Collection<File> input() {
         return input_;
     }
 
@@ -596,6 +730,17 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation plugins(String... jars) {
+        plugins_.addAll(Arrays.stream(jars).map(File::new).toList());
+        return this;
+    }
+
+    /**
+     * Extra paths to plugin jars.
+     *
+     * @param jars one or more jars
+     * @return this operation instance
+     */
+    public DetektOperation plugins(File... jars) {
         plugins_.addAll(List.of(jars));
         return this;
     }
@@ -603,16 +748,25 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     /**
      * Extra paths to plugin jars.
      *
-     * @param jars the list of jars
+     * @param jars the jars paths
      * @return this operation instance
      */
-    public DetektOperation plugins(Collection<String> jars) {
+    public DetektOperation plugins(Collection<File> jars) {
         plugins_.addAll(jars);
         return this;
     }
 
     /**
-     * Generates a report for given {@link DetektReportId report-id} and stores it on given 'path'.
+     * Extra path to plugins jars.
+     *
+     * @return the jars paths
+     */
+    public Collection<File> plugins() {
+        return plugins_;
+    }
+
+    /**
+     * Generates a report for given {@link ReportId report-id} and stores it on given 'path'.
      *
      * @param reports one or more reports
      * @return this operation instance
