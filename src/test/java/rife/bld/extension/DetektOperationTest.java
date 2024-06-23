@@ -20,6 +20,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import rife.bld.BaseProject;
 import rife.bld.blueprints.BaseProjectBlueprint;
+import rife.bld.extension.detekt.Report;
+import rife.bld.extension.detekt.ReportId;
 import rife.bld.operations.exceptions.ExitStatusException;
 
 import java.io.File;
@@ -147,11 +149,11 @@ class DetektOperationTest {
         var op = new DetektOperation()
                 .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
                         "Example"))
-                .report(new DetektReport(DetektReportId.HTML, html.getAbsolutePath()))
-                .report(new DetektReport(DetektReportId.XML, xml.getAbsolutePath()))
-                .report(new DetektReport(DetektReportId.TXT, txt.getAbsolutePath()))
-                .report(new DetektReport(DetektReportId.MD, md.getAbsolutePath()))
-                .report(new DetektReport(DetektReportId.SARIF, sarif.getAbsolutePath()));
+                .report(new Report(ReportId.HTML, html.getAbsolutePath()))
+                .report(new Report(ReportId.XML, xml.getAbsolutePath()))
+                .report(new Report(ReportId.TXT, txt.getAbsolutePath()))
+                .report(new Report(ReportId.MD, md.getAbsolutePath()))
+                .report(new Report(ReportId.SARIF, sarif.getAbsolutePath()));
 
         assertThatThrownBy(op::execute).isInstanceOf(ExitStatusException.class);
 

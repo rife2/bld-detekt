@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package rife.bld.extension;
+package rife.bld.extension.detekt;
 
 /**
  * Defines a report for the given report-id to be stored on the given path.
@@ -24,5 +24,5 @@ package rife.bld.extension;
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
  * @since 1.0
  */
-public record DetektReport(DetektReportId id, String path) {
+public record Report(ReportId id, String path) {
 }

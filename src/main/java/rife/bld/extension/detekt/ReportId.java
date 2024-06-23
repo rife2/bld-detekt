@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package rife.bld.extension;
+package rife.bld.extension.detekt;
 
 /**
  * The report-id values.
@@ -22,6 +22,6 @@ package rife.bld.extension;
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
  * @since 1.0
  */
-public enum DetektReportId {
+public enum ReportId {
     TXT, XML, HTML, MD, SARIF
 }

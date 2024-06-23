@@ -617,7 +617,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @param reports one or more reports
      * @return this operation instance
      */
-    public DetektOperation report(DetektReport... reports) {
+    public DetektOperation report(Report... reports) {
         report_.addAll(List.of(reports));
         return this;
     }
