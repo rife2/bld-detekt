@@ -45,3 +45,7 @@ public void detektBaseline() throws ExitStatusException, IOException, Interrupte
 - [View Examples Project](https://github.com/rife2/bld-detekt/tree/main/examples)
 
 Please check the [DetektOperation documentation](https://rife2.github.io/bld-detekt/rife/bld/extension/DetektOperation.html#method-summary) for all available configuration options.
+
+## Template Project
+
+There is also a [Kotlin Template Project](https://github.com/rife2/kotlin-bld-example) with support for [Dokka](https://github.com/rife2/bld-dokka) and the Detekt extensions.

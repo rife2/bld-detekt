@@ -21,7 +21,6 @@ import rife.bld.extension.detekt.Report;
 import rife.bld.extension.detekt.ReportId;
 import rife.bld.operations.AbstractProcessOperation;
 import rife.bld.operations.exceptions.ExitStatusException;
-import rife.tools.exceptions.FileUtilsErrorException;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +59,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     private final Collection<File> classpath_ = new ArrayList<>();
     private final Collection<File> config_ = new ArrayList<>();
     private final Collection<String> excludes_ = new ArrayList<>();
+    private final Collection<String> includes_ = new ArrayList<>();
     private final Collection<File> input_ = new ArrayList<>();
     private final Collection<File> plugins_ = new ArrayList<>();
     private final Collection<Report> report_ = new ArrayList<>();
@@ -73,7 +73,6 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     private boolean debug_;
     private boolean disableDefaultRuleSets_;
     private boolean generateConfig_;
-    private final Collection<String> includes_ = new ArrayList<>();
     private String jdkHome_;
     private String jvmTarget_;
     private String languageVersion_;
@@ -348,20 +347,26 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     /**
      * Performs the operation.
      *
-     * @throws InterruptedException    when the operation was interrupted
-     * @throws IOException             when an exception occurred during the execution of the process
-     * @throws FileUtilsErrorException when an exception occurred during the retrieval of the operation output
-     * @throws ExitStatusException     when the exit status was changed during the operation
+     * @throws InterruptedException when the operation was interrupted
+     * @throws IOException          when an exception occurred during the execution of the process
+     * @throws ExitStatusException  when the exit status was changed during the operation
      */
     @Override
-    public void execute() throws IOException, FileUtilsErrorException, InterruptedException, ExitStatusException {
-        super.execute();
-        if (successful_ && LOGGER.isLoggable(Level.INFO)) {
-            if (createBaseline_) {
-                LOGGER.info("Detekt baseline generated successfully: "
-                        + "file://" + new File(baseline_).toURI().getPath());
-            } else {
-                LOGGER.info("Detekt operation finished successfully.");
+    public void execute() throws IOException, InterruptedException, ExitStatusException {
+        if (project_ == null) {
+            if (LOGGER.isLoggable(Level.SEVERE) && !silent()) {
+                LOGGER.severe("A project must be specified.");
+            }
+            throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
+        } else {
+            super.execute();
+            if (successful_ && LOGGER.isLoggable(Level.INFO) && !silent()){
+                if (createBaseline_) {
+                    LOGGER.info("Detekt baseline generated successfully: "
+                            + "file://" + new File(baseline_).toURI().getPath());
+                } else {
+                    LOGGER.info("Detekt operation finished successfully.");
+                }
             }
         }
     }
@@ -372,144 +377,142 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     @Override
     protected List<String> executeConstructProcessCommandList() {
-        if (project_ == null) {
-            LOGGER.severe("A project must be specified.");
-        }
-
         final List<String> args = new ArrayList<>();
-        args.add(javaTool());
-        args.add("-cp");
-        args.add(getDetektJarList(project_.libBldDirectory()));
-        args.add("io.gitlab.arturbosch.detekt.cli.Main");
+        if (project_ != null) {
+            args.add(javaTool());
+            args.add("-cp");
+            args.add(getDetektJarList(project_.libBldDirectory()));
+            args.add("io.gitlab.arturbosch.detekt.cli.Main");
 
-        // all-rules
-        if (allRules_) {
-            args.add("--all-rules");
-        }
+            // all-rules
+            if (allRules_) {
+                args.add("--all-rules");
+            }
 
-        // auto-correct
-        if (autoCorrect_) {
-            args.add("--auto-correct");
-        }
+            // auto-correct
+            if (autoCorrect_) {
+                args.add("--auto-correct");
+            }
 
-        // base-path
-        if (isNotBlank(basePath_)) {
-            args.add("--base-path");
-            args.add(basePath_);
-        }
+            // base-path
+            if (isNotBlank(basePath_)) {
+                args.add("--base-path");
+                args.add(basePath_);
+            }
 
-        // baseline
-        if (isNotBlank(baseline_)) {
-            args.add("--baseline");
-            args.add(baseline_);
-        }
+            // baseline
+            if (isNotBlank(baseline_)) {
+                args.add("--baseline");
+                args.add(baseline_);
+            }
 
-        // build-upon-default-config
-        if (buildUponDefaultConfig_) {
-            args.add("--build-upon-default-config");
-        }
+            // build-upon-default-config
+            if (buildUponDefaultConfig_) {
+                args.add("--build-upon-default-config");
+            }
 
-        // classpath
-        if (!classpath_.isEmpty()) {
-            args.add("--classpath");
-            args.add(String.join(File.pathSeparator, classpath_.stream().map(File::getAbsolutePath).toList()));
-        }
+            // classpath
+            if (!classpath_.isEmpty()) {
+                args.add("--classpath");
+                args.add(String.join(File.pathSeparator, classpath_.stream().map(File::getAbsolutePath).toList()));
+            }
 
-        // config
-        if (!config_.isEmpty()) {
-            args.add("-config");
-            args.add(String.join(";", config_.stream().map(File::getAbsolutePath).toList()));
-        }
+            // config
+            if (!config_.isEmpty()) {
+                args.add("-config");
+                args.add(String.join(";", config_.stream().map(File::getAbsolutePath).toList()));
+            }
 
-        // config-resource
-        if (isNotBlank(configResource_)) {
-            args.add("--config-resource");
-            args.add(configResource_);
-        }
+            // config-resource
+            if (isNotBlank(configResource_)) {
+                args.add("--config-resource");
+                args.add(configResource_);
+            }
 
-        // create-baseline
-        if (createBaseline_) {
-            args.add("--create-baseline");
-        }
+            // create-baseline
+            if (createBaseline_) {
+                args.add("--create-baseline");
+            }
 
-        // debug
-        if (debug_) {
-            args.add("--debug");
-        }
+            // debug
+            if (debug_) {
+                args.add("--debug");
+            }
 
-        // disable-default-rulesets
-        if (disableDefaultRuleSets_) {
-            args.add("--disable-default-rulesets");
-        }
+            // disable-default-rulesets
+            if (disableDefaultRuleSets_) {
+                args.add("--disable-default-rulesets");
+            }
 
-        // excludes
-        if (!excludes_.isEmpty()) {
-            args.add("--excludes");
-            args.add(String.join(",", excludes_));
-        }
+            // excludes
+            if (!excludes_.isEmpty()) {
+                args.add("--excludes");
+                args.add(String.join(",", excludes_));
+            }
 
-        // generate-config
-        if (generateConfig_) {
-            args.add("--generate-config");
-        }
+            // generate-config
+            if (generateConfig_) {
+                args.add("--generate-config");
+            }
 
-        // includes
-        if (!includes_.isEmpty()) {
-            args.add("--includes");
-            args.add(String.join(",", includes_));
-        }
+            // includes
+            if (!includes_.isEmpty()) {
+                args.add("--includes");
+                args.add(String.join(",", includes_));
+            }
 
-        // input
-        if (!input_.isEmpty()) {
-            args.add("--input");
-            args.add(String.join(",", input_.stream().map(File::getAbsolutePath).toList()));
-        }
+            // input
+            if (!input_.isEmpty()) {
+                args.add("--input");
+                args.add(String.join(",", input_.stream().map(File::getAbsolutePath).toList()));
+            }
 
-        // jdk-home
-        if (isNotBlank(jdkHome_)) {
-            args.add("--jdk-home");
-            args.add(jdkHome_);
-        }
+            // jdk-home
+            if (isNotBlank(jdkHome_)) {
+                args.add("--jdk-home");
+                args.add(jdkHome_);
+            }
 
-        // jvm-target
-        if (isNotBlank(jvmTarget_)) {
-            args.add("--jvm-target");
-            args.add(jvmTarget_);
-        }
+            // jvm-target
+            if (isNotBlank(jvmTarget_)) {
+                args.add("--jvm-target");
+                args.add(jvmTarget_);
+            }
 
-        // language-version
-        if (isNotBlank(languageVersion_)) {
-            args.add("--language-version");
-            args.add(languageVersion_);
-        }
+            // language-version
+            if (isNotBlank(languageVersion_)) {
+                args.add("--language-version");
+                args.add(languageVersion_);
+            }
 
-        // max-issues
-        if (maxIssues_ > 0) {
-            args.add("--max-issues");
-            args.add(String.valueOf(maxIssues_));
-        }
+            // max-issues
+            if (maxIssues_ > 0) {
+                args.add("--max-issues");
+                args.add(String.valueOf(maxIssues_));
+            }
 
-        // parallel
-        if (parallel_) {
-            args.add("--parallel");
-        }
+            // parallel
+            if (parallel_) {
+                args.add("--parallel");
+            }
 
-        // plugins
-        if (!plugins_.isEmpty()) {
-            args.add("--plugins");
-            args.add(String.join(",", plugins_.stream().map(File::getAbsolutePath).toList()));
-        }
+            // plugins
+            if (!plugins_.isEmpty()) {
+                args.add("--plugins");
+                args.add(String.join(",", plugins_.stream().map(File::getAbsolutePath).toList()));
+            }
 
-        // report
-        if (!report_.isEmpty()) {
-            report_.forEach(it -> {
-                args.add("--report");
-                args.add(it.id().name().toLowerCase() + ":" + it.path());
-            });
-        }
+            // report
+            if (!report_.isEmpty()) {
+                report_.forEach(it -> {
+                    args.add("--report");
+                    args.add(it.id().name().toLowerCase() + ":" + it.path());
+                });
+            }
 
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.join(" ", args.stream().filter(this::isNotBlank).toList()));
+            if (LOGGER.isLoggable(Level.FINE) && !silent()) {
+                LOGGER.fine(String.join(" ", args.stream().filter(this::isNotBlank).toList()));
+            }
         }
 
         return args;
@@ -551,9 +554,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         return this;
     }
 
-    /*
-     * Retrieves the matching JARs files from the given directory.
-     */
+    // Retrieves the matching JARs files from the given directory.
     private String getDetektJarList(File directory) {
         var jars = new ArrayList<String>();
 

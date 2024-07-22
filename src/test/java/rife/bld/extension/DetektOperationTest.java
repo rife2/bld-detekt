@@ -61,6 +61,7 @@ class DetektOperationTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     void testCheckAllParameters() throws IOException {
         var args = Files.readAllLines(Paths.get("src", "test", "resources", "detekt-args.txt"));
 
@@ -108,10 +109,10 @@ class DetektOperationTest {
 
         for (var i = 1; i < 6; i++) {
             assertThat(op.classPath()).as("classPath[" + i + ']').hasSize(5).contains(new File("path" + i));
-            assertThat(op.config()).as("config["  + i + ']').hasSize(5).contains(new File("config" + i));
-            assertThat(op.includes()).as("includes["  + i + ']').hasSize(5).contains("includes" + i);
-            assertThat(op.input()).as("input["  + i + ']').hasSize(5).contains(new File("input" + i));
-            assertThat(op.plugins()).as("plugins["  + i + ']').hasSize(5).contains(new File("jar" + i));
+            assertThat(op.config()).as("config[" + i + ']').hasSize(5).contains(new File("config" + i));
+            assertThat(op.includes()).as("includes[" + i + ']').hasSize(5).contains("includes" + i);
+            assertThat(op.input()).as("input[" + i + ']').hasSize(5).contains(new File("input" + i));
+            assertThat(op.plugins()).as("plugins[" + i + ']').hasSize(5).contains(new File("jar" + i));
         }
 
         var params = op.executeConstructProcessCommandList();
@@ -189,5 +190,11 @@ class DetektOperationTest {
                         "Example"))
                 .debug(true);
         assertThatThrownBy(op::execute).isInstanceOf(ExitStatusException.class);
+    }
+
+    @Test
+    void testExecuteNoProject() {
+        var op = new DetektOperation();
+        assertThatCode(op::execute).isInstanceOf(ExitStatusException.class);
     }
 }
