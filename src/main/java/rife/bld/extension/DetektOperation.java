@@ -24,8 +24,8 @@ import rife.bld.operations.exceptions.ExitStatusException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -55,7 +55,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             "sarif4k-jvm-",
             "snakeyaml-engine-",
             "trove4j-");
-    private static final Logger LOGGER = Logger.getLogger(Report.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DetektOperation.class.getName());
     private final Collection<File> classpath_ = new ArrayList<>();
     private final Collection<File> config_ = new ArrayList<>();
     private final Collection<String> excludes_ = new ArrayList<>();
@@ -128,8 +128,28 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation basePath(File path) {
-        basePath_ = path.getAbsolutePath();
-        return this;
+        return basePath(path.getAbsolutePath());
+    }
+
+    /**
+     * Retrieves the base path.
+     *
+     * @return the directory path
+     */
+    public String basePath() {
+        return basePath_;
+    }
+
+    /**
+     * Specifies a directory as the base path. Currently, it impacts all file
+     * paths in the formatted reports. File paths in console output and txt
+     * report are not affected and remain as absolute paths.
+     *
+     * @param path the directory path
+     * @return this operation instance
+     */
+    public DetektOperation basePath(Path path) {
+        return basePath(path.toFile());
     }
 
     /**
@@ -152,8 +172,27 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation baseline(File baseline) {
-        baseline_ = baseline.getAbsolutePath();
-        return this;
+        return baseline(baseline.getAbsolutePath());
+    }
+
+    /**
+     * If a baseline xml file is passed in, only new code smells not in the
+     * baseline are printed in the console.
+     *
+     * @param baseline the baseline xml file
+     * @return this operation instance
+     */
+    public DetektOperation baseline(Path baseline) {
+        return baseline(baseline.toFile());
+    }
+
+    /**
+     * Retrieves the baseline xml file.
+     *
+     * @return the baseline xml file
+     */
+    public String baseline() {
+        return baseline_;
     }
 
     /**
@@ -177,8 +216,18 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation classPath(File... paths) {
-        classpath_.addAll(List.of(paths));
-        return this;
+        return classPath(List.of(paths));
+    }
+
+    /**
+     * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
+     * Used for type resolution.
+     *
+     * @param paths one or more files
+     * @return this operation instance
+     */
+    public DetektOperation classPath(Path... paths) {
+        return classPathPaths(List.of(paths));
     }
 
     /**
@@ -189,8 +238,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation classPath(String... paths) {
-        classpath_.addAll(Arrays.stream(paths).map(File::new).toList());
-        return this;
+        return classPathStrings(List.of(paths));
     }
 
 
@@ -216,13 +264,26 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Paths to the config files ({@code path/to/config.yml}).
+     * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
+     * Used for type resolution.
      *
-     * @param configs one or more config files
+     * @param paths the paths
      * @return this operation instance
      */
-    public DetektOperation config(File... configs) {
-        config_.addAll(List.of(configs));
+    public DetektOperation classPathPaths(Collection<Path> paths) {
+        classpath_.addAll(paths.stream().map(Path::toFile).toList());
+        return this;
+    }
+
+    /**
+     * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
+     * Used for type resolution.
+     *
+     * @param paths the paths
+     * @return this operation instance
+     */
+    public DetektOperation classPathStrings(Collection<String> paths) {
+        classpath_.addAll(paths.stream().map(File::new).toList());
         return this;
     }
 
@@ -232,10 +293,30 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @param configs one or more config files
      * @return this operation instance
      */
-    public DetektOperation config(String... configs) {
-        config_.addAll(Arrays.stream(configs).map(File::new).toList());
-        return this;
+    public DetektOperation config(File... configs) {
+        return config(List.of(configs));
     }
+
+    /**
+     * Paths to the config files ({@code path/to/config.yml}).
+     *
+     * @param configs one or more config files
+     * @return this operation instance
+     */
+    public DetektOperation config(Path... configs) {
+        return configPaths(List.of(configs));
+    }
+
+    /**
+     * Paths to the config files ({@code path/to/config.yml}).
+     *
+     * @param configs one or more config files
+     * @return this operation instance
+     */
+    public DetektOperation config(String... configs) {
+        return configStrings(List.of(configs));
+    }
+
 
     /**
      * Paths to the config files ({@code path/to/config.yml}).
@@ -258,6 +339,17 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
+     * Paths to the config files ({@code path/to/config.yml}).
+     *
+     * @param configs the config files
+     * @return this operation instance
+     */
+    public DetektOperation configPaths(Collection<Path> configs) {
+        config_.addAll(configs.stream().map(Path::toFile).toList());
+        return this;
+    }
+
+    /**
      * Path to the config resource on detekt's classpath ({@code path/to/config.yml}).
      *
      * @param resource the config resource path
@@ -275,7 +367,36 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation configResource(File resource) {
-        configResource_ = resource.getAbsolutePath();
+        return configResource(resource.getAbsolutePath());
+    }
+
+    /**
+     * Path to the config resource on detekt's classpath ({@code path/to/config.yml}).
+     *
+     * @param resource the config resource path
+     * @return this operation instance
+     */
+    public DetektOperation configResource(Path resource) {
+        return configResource(resource.toFile());
+    }
+
+    /**
+     * Retrieves the path of the config resource.
+     *
+     * @return the config resource path
+     */
+    public String configResource() {
+        return configResource_;
+    }
+
+    /**
+     * Paths to the config files ({@code path/to/config.yml}).
+     *
+     * @param configs the config files
+     * @return this operation instance
+     */
+    public DetektOperation configStrings(Collection<String> configs) {
+        config_.addAll(configs.stream().map(File::new).toList());
         return this;
     }
 
@@ -360,7 +481,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
         } else {
             super.execute();
-            if (successful_ && LOGGER.isLoggable(Level.INFO) && !silent()){
+            if (successful_ && LOGGER.isLoggable(Level.INFO) && !silent()) {
                 if (createBaseline_) {
                     LOGGER.info("Detekt baseline generated successfully: "
                             + "file://" + new File(baseline_).toURI().getPath());
@@ -627,8 +748,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation input(String... paths) {
-        input_.addAll(Arrays.stream(paths).map(File::new).toList());
-        return this;
+        return inputStrings(List.of(paths));
     }
 
     /**
@@ -638,10 +758,18 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation input(File... paths) {
-        input_.addAll(List.of(paths));
-        return this;
+        return input(List.of(paths));
     }
 
+    /**
+     * Input paths to analyze. If not specified the current working directory is used.
+     *
+     * @param paths one or more paths
+     * @return this operation instance
+     */
+    public DetektOperation input(Path... paths) {
+        return inputPaths(List.of(paths));
+    }
 
     /**
      * Returns the input paths to analyze.
@@ -650,6 +778,28 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     public Collection<File> input() {
         return input_;
+    }
+
+    /**
+     * Input paths to analyze. If not specified the current working directory is used.
+     *
+     * @param paths the paths
+     * @return this operation instance
+     */
+    public DetektOperation inputPaths(Collection<Path> paths) {
+        input_.addAll(paths.stream().map(Path::toFile).toList());
+        return this;
+    }
+
+    /**
+     * Input paths to analyze. If not specified the current working directory is used.
+     *
+     * @param paths the paths
+     * @return this operation instance
+     */
+    public DetektOperation inputStrings(Collection<String> paths) {
+        input_.addAll(paths.stream().map(File::new).toList());
+        return this;
     }
 
     /*
@@ -731,8 +881,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation plugins(String... jars) {
-        plugins_.addAll(Arrays.stream(jars).map(File::new).toList());
-        return this;
+        return pluginsStrings(List.of(jars));
     }
 
     /**
@@ -742,8 +891,17 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation plugins(File... jars) {
-        plugins_.addAll(List.of(jars));
-        return this;
+        return plugins(List.of(jars));
+    }
+
+    /**
+     * Extra paths to plugin jars.
+     *
+     * @param jars one or more jars
+     * @return this operation instance
+     */
+    public DetektOperation plugins(Path... jars) {
+        return pluginsPaths(List.of(jars));
     }
 
     /**
@@ -764,6 +922,28 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     public Collection<File> plugins() {
         return plugins_;
+    }
+
+    /**
+     * Extra paths to plugin jars.
+     *
+     * @param jars the jars paths
+     * @return this operation instance
+     */
+    public DetektOperation pluginsPaths(Collection<Path> jars) {
+        plugins_.addAll(jars.stream().map(Path::toFile).toList());
+        return this;
+    }
+
+    /**
+     * Extra paths to plugin jars.
+     *
+     * @param jars the jars paths
+     * @return this operation instance
+     */
+    public DetektOperation pluginsStrings(Collection<String> jars) {
+        plugins_.addAll(jars.stream().map(File::new).toList());
+        return this;
     }
 
     /**

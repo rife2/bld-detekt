@@ -61,6 +61,36 @@ class DetektOperationTest {
     }
 
     @Test
+    void testBasePath() {
+        var foo = new File("foo");
+        var bar = new File("bar");
+
+        var op = new DetektOperation().basePath(foo);
+        assertThat(op.basePath()).as("as file").isEqualTo(foo.getAbsolutePath());
+
+        op = op.basePath(bar.toPath());
+        assertThat(op.basePath()).as("as path").isEqualTo(bar.getAbsolutePath());
+
+        op = new DetektOperation().basePath("foo");
+        assertThat(op.basePath()).as("as string").isEqualTo("foo");
+    }
+
+    @Test
+    void testBaseline() {
+        var foo = new File("foo");
+        var bar = new File("bar");
+
+        var op = new DetektOperation().baseline(foo);
+        assertThat(op.baseline()).as("as file").isEqualTo(foo.getAbsolutePath());
+
+        op = op.baseline(bar.toPath());
+        assertThat(op.baseline()).as("as path").isEqualTo(bar.getAbsolutePath());
+
+        op = new DetektOperation().baseline("foo");
+        assertThat(op.baseline()).as("as string").isEqualTo("foo");
+    }
+
+    @Test
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     void testCheckAllParameters() throws IOException {
         var args = Files.readAllLines(Paths.get("src", "test", "resources", "detekt-args.txt"));
@@ -130,6 +160,81 @@ class DetektOperationTest {
     }
 
     @Test
+    void testClassPath() {
+        var foo = new File("foo");
+        var bar = new File("bar");
+
+        var op = new DetektOperation().classPath("foo", "bar");
+        assertThat(op.classPath()).as("String...").contains(foo, bar);
+        op.classPath().clear();
+
+        op = op.classPath(foo, bar);
+        assertThat(op.classPath()).as("File...").contains(foo, bar);
+        op.classPath().clear();
+
+        op = op.classPath(foo.toPath(), bar.toPath());
+        assertThat(op.classPath()).as("Path...").contains(foo, bar);
+        op.classPath().clear();
+
+        op = op.classPathStrings(List.of("foo", "bar"));
+        assertThat(op.classPath()).as("List(String...)").contains(foo, bar);
+        op.classPath().clear();
+
+        op = op.classPath(List.of(foo, bar));
+        assertThat(op.classPath()).as("File...").contains(foo, bar);
+        op.classPath().clear();
+
+        op = op.classPathPaths(List.of(foo.toPath(), bar.toPath()));
+        assertThat(op.classPath()).as("Path...").contains(foo, bar);
+        op.classPath().clear();
+    }
+
+    @Test
+    void testConfig() {
+        var foo = new File("foo");
+        var bar = new File("bar");
+
+        var op = new DetektOperation().config("foo", "bar");
+        assertThat(op.config()).as("String...").contains(foo, bar);
+        op.config().clear();
+
+        op = op.config(foo, bar);
+        assertThat(op.config()).as("File...").contains(foo, bar);
+        op.config().clear();
+
+        op = op.config(foo.toPath(), bar.toPath());
+        assertThat(op.config()).as("Path...").contains(foo, bar);
+        op.config().clear();
+
+        op = op.configStrings(List.of("foo", "bar"));
+        assertThat(op.config()).as("List(String...)").contains(foo, bar);
+        op.config().clear();
+
+        op = op.config(List.of(foo, bar));
+        assertThat(op.config()).as("File...").contains(foo, bar);
+        op.config().clear();
+
+        op = op.configPaths(List.of(foo.toPath(), bar.toPath()));
+        assertThat(op.config()).as("Path...").contains(foo, bar);
+        op.config().clear();
+    }
+
+    @Test
+    void testConfigResource() {
+        var foo = new File("foo");
+        var bar = new File("bar");
+
+        var op = new DetektOperation().configResource(foo);
+        assertThat(op.configResource()).as("as file").isEqualTo(foo.getAbsolutePath());
+
+        op = op.configResource(bar.toPath());
+        assertThat(op.configResource()).as("as path").isEqualTo(bar.getAbsolutePath());
+
+        op = new DetektOperation().configResource("foo");
+        assertThat(op.configResource()).as("as string").isEqualTo("foo");
+    }
+
+    @Test
     void testExampleBaseline() throws IOException, ExitStatusException, InterruptedException {
         var tmpDir = Files.createTempDirectory("bld-detekt-").toFile();
 
@@ -196,5 +301,65 @@ class DetektOperationTest {
     void testExecuteNoProject() {
         var op = new DetektOperation();
         assertThatCode(op::execute).isInstanceOf(ExitStatusException.class);
+    }
+
+    @Test
+    void testInput() {
+        var foo = new File("foo");
+        var bar = new File("bar");
+
+        var op = new DetektOperation().input("foo", "bar");
+        assertThat(op.input()).as("String...").contains(foo, bar);
+        op.input().clear();
+
+        op = op.input(foo, bar);
+        assertThat(op.input()).as("File...").contains(foo, bar);
+        op.input().clear();
+
+        op = op.input(foo.toPath(), bar.toPath());
+        assertThat(op.input()).as("Path...").contains(foo, bar);
+        op.input().clear();
+
+        op = op.inputStrings(List.of("foo", "bar"));
+        assertThat(op.input()).as("List(String...)").contains(foo, bar);
+        op.input().clear();
+
+        op = op.input(List.of(foo, bar));
+        assertThat(op.input()).as("File...").contains(foo, bar);
+        op.input().clear();
+
+        op = op.inputPaths(List.of(foo.toPath(), bar.toPath()));
+        assertThat(op.input()).as("Path...").contains(foo, bar);
+        op.input().clear();
+    }
+
+    @Test
+    void testPlugins() {
+        var foo = new File("foo");
+        var bar = new File("bar");
+
+        var op = new DetektOperation().plugins("foo", "bar");
+        assertThat(op.plugins()).as("String...").contains(foo, bar);
+        op.plugins().clear();
+
+        op = op.plugins(foo, bar);
+        assertThat(op.plugins()).as("File...").contains(foo, bar);
+        op.plugins().clear();
+
+        op = op.plugins(foo.toPath(), bar.toPath());
+        assertThat(op.plugins()).as("Path...").contains(foo, bar);
+        op.plugins().clear();
+
+        op = op.pluginsStrings(List.of("foo", "bar"));
+        assertThat(op.plugins()).as("List(String...)").contains(foo, bar);
+        op.plugins().clear();
+
+        op = op.plugins(List.of(foo, bar));
+        assertThat(op.plugins()).as("File...").contains(foo, bar);
+        op.plugins().clear();
+
+        op = op.pluginsPaths(List.of(foo.toPath(), bar.toPath()));
+        assertThat(op.plugins()).as("Path...").contains(foo, bar);
+        op.plugins().clear();
     }
 }
