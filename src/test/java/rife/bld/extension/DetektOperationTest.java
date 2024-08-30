@@ -71,7 +71,7 @@ class DetektOperationTest {
         op = op.basePath(bar.toPath());
         assertThat(op.basePath()).as("as path").isEqualTo(bar.getAbsolutePath());
 
-        op = new DetektOperation().basePath("foo");
+        op = op.basePath("foo");
         assertThat(op.basePath()).as("as string").isEqualTo("foo");
     }
 
@@ -86,7 +86,7 @@ class DetektOperationTest {
         op = op.baseline(bar.toPath());
         assertThat(op.baseline()).as("as path").isEqualTo(bar.getAbsolutePath());
 
-        op = new DetektOperation().baseline("foo");
+        op = op.baseline("foo");
         assertThat(op.baseline()).as("as string").isEqualTo("foo");
     }
 

@@ -149,7 +149,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation basePath(Path path) {
-        return basePath(path.toFile());
+        return basePath(path.toFile().getAbsolutePath());
     }
 
     /**
@@ -183,7 +183,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation baseline(Path baseline) {
-        return baseline(baseline.toFile());
+        return baseline(baseline.toFile().getAbsolutePath());
     }
 
     /**
@@ -214,6 +214,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths one or more files
      * @return this operation instance
+     * @see #classPath(Collection)
      */
     public DetektOperation classPath(File... paths) {
         return classPath(List.of(paths));
@@ -225,6 +226,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths one or more files
      * @return this operation instance
+     * @see #classPathPaths(Collection)
      */
     public DetektOperation classPath(Path... paths) {
         return classPathPaths(List.of(paths));
@@ -236,6 +238,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths one or more files
      * @return this operation instance
+     * @see #classPathStrings(Collection)
      */
     public DetektOperation classPath(String... paths) {
         return classPathStrings(List.of(paths));
@@ -248,6 +251,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths the paths
      * @return this operation instance
+     * @see #classPath(File...)
      */
     public DetektOperation classPath(Collection<File> paths) {
         classpath_.addAll(paths);
@@ -269,10 +273,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths the paths
      * @return this operation instance
+     * @see #classPath(Path...)
      */
     public DetektOperation classPathPaths(Collection<Path> paths) {
-        classpath_.addAll(paths.stream().map(Path::toFile).toList());
-        return this;
+        return classPath(paths.stream().map(Path::toFile).toList());
     }
 
     /**
@@ -281,10 +285,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths the paths
      * @return this operation instance
+     * @see #classPath(String...)
      */
     public DetektOperation classPathStrings(Collection<String> paths) {
-        classpath_.addAll(paths.stream().map(File::new).toList());
-        return this;
+        return classPath(paths.stream().map(File::new).toList());
     }
 
     /**
@@ -292,6 +296,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param configs one or more config files
      * @return this operation instance
+     * @see #config(Collection)
      */
     public DetektOperation config(File... configs) {
         return config(List.of(configs));
@@ -302,6 +307,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param configs one or more config files
      * @return this operation instance
+     * @see #configPaths(Collection)
      */
     public DetektOperation config(Path... configs) {
         return configPaths(List.of(configs));
@@ -312,6 +318,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param configs one or more config files
      * @return this operation instance
+     * @see #configStrings(Collection)
      */
     public DetektOperation config(String... configs) {
         return configStrings(List.of(configs));
@@ -323,6 +330,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param configs the config files
      * @return this operation instance
+     * @see #config(File...)
      */
     public DetektOperation config(Collection<File> configs) {
         config_.addAll(configs);
@@ -343,10 +351,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param configs the config files
      * @return this operation instance
+     * @see #config(Path...)
      */
     public DetektOperation configPaths(Collection<Path> configs) {
-        config_.addAll(configs.stream().map(Path::toFile).toList());
-        return this;
+        return config(configs.stream().map(Path::toFile).toList());
     }
 
     /**
@@ -377,7 +385,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation configResource(Path resource) {
-        return configResource(resource.toFile());
+        return configResource(resource.toFile().getAbsolutePath());
     }
 
     /**
@@ -394,6 +402,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param configs the config files
      * @return this operation instance
+     * @see #config(String...)
      */
     public DetektOperation configStrings(Collection<String> configs) {
         config_.addAll(configs.stream().map(File::new).toList());
@@ -441,8 +450,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation excludes(String... patterns) {
-        excludes_.addAll(List.of(patterns));
-        return this;
+        return excludes(List.of(patterns));
     }
 
     /**
@@ -705,8 +713,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation includes(String... patterns) {
-        includes_.addAll(List.of(patterns));
-        return this;
+        return includes(List.of(patterns));
     }
 
     /**
@@ -735,6 +742,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths the paths
      * @return this operation instance
+     * @see #input(Collection)
      */
     public DetektOperation input(Collection<File> paths) {
         input_.addAll(paths);
@@ -746,6 +754,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths one or more paths
      * @return this operation instance
+     * @see #inputStrings(Collection)
      */
     public DetektOperation input(String... paths) {
         return inputStrings(List.of(paths));
@@ -756,6 +765,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths one or more paths
      * @return this operation instance
+     * @see #input(Collection)
      */
     public DetektOperation input(File... paths) {
         return input(List.of(paths));
@@ -766,6 +776,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths one or more paths
      * @return this operation instance
+     * @see #inputPaths(Collection)
      */
     public DetektOperation input(Path... paths) {
         return inputPaths(List.of(paths));
@@ -785,10 +796,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths the paths
      * @return this operation instance
+     * @see #input(Path...)
      */
     public DetektOperation inputPaths(Collection<Path> paths) {
-        input_.addAll(paths.stream().map(Path::toFile).toList());
-        return this;
+        return input(paths.stream().map(Path::toFile).toList());
     }
 
     /**
@@ -796,10 +807,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths the paths
      * @return this operation instance
+     * @see #input(String...)
      */
     public DetektOperation inputStrings(Collection<String> paths) {
-        input_.addAll(paths.stream().map(File::new).toList());
-        return this;
+        return input(paths.stream().map(File::new).toList());
     }
 
     /*
@@ -879,6 +890,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param jars one or more jars
      * @return this operation instance
+     * @see #pluginsStrings(Collection)
      */
     public DetektOperation plugins(String... jars) {
         return pluginsStrings(List.of(jars));
@@ -889,6 +901,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param jars one or more jars
      * @return this operation instance
+     * @see #plugins(Collection)
      */
     public DetektOperation plugins(File... jars) {
         return plugins(List.of(jars));
@@ -899,6 +912,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param jars one or more jars
      * @return this operation instance
+     * @see #pluginsPaths(Collection)
      */
     public DetektOperation plugins(Path... jars) {
         return pluginsPaths(List.of(jars));
@@ -909,6 +923,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param jars the jars paths
      * @return this operation instance
+     * @see #input(File...)
      */
     public DetektOperation plugins(Collection<File> jars) {
         plugins_.addAll(jars);
@@ -929,10 +944,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param jars the jars paths
      * @return this operation instance
+     * @see #plugins(Path...)
      */
     public DetektOperation pluginsPaths(Collection<Path> jars) {
-        plugins_.addAll(jars.stream().map(Path::toFile).toList());
-        return this;
+        return plugins(jars.stream().map(Path::toFile).toList());
     }
 
     /**
@@ -940,10 +955,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param jars the jars paths
      * @return this operation instance
+     * @see #plugins(String...)
      */
     public DetektOperation pluginsStrings(Collection<String> jars) {
-        plugins_.addAll(jars.stream().map(File::new).toList());
-        return this;
+        return plugins(jars.stream().map(File::new).toList());
     }
 
     /**
