@@ -33,16 +33,18 @@ public class DetektOperationBuild extends Project {
     public DetektOperationBuild() {
         pkg = "rife.bld.extension";
         name = "DetektOperation";
-        version = version(0, 9, 6);
+        version = version(0, 9, 7);
 
         javaRelease = 17;
+
         downloadSources = true;
         autoDownloadPurge = true;
+        
         repositories = List.of(MAVEN_LOCAL, MAVEN_CENTRAL, RIFE2_RELEASES, RIFE2_SNAPSHOTS);
 
         scope(compile)
                 .include(dependency("com.uwyn.rife2", "bld", version(2, 1, 0)))
-                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli", version(1, 23, 6)));
+                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli", version(1, 23, 7)));
         scope(test)
                 .include(dependency("org.junit.jupiter", "junit-jupiter", version(5, 11, 0)))
                 .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1, 11, 0)))
@@ -56,28 +58,26 @@ public class DetektOperationBuild extends Project {
 
         publishOperation()
                 .repository(version.isSnapshot() ? repository("rife2-snapshot") : repository("rife2"))
+                .repository(repository("github"))
                 .info()
                 .groupId("com.uwyn.rife2")
                 .artifactId("bld-detekt")
                 .description("bld Detekt Extension")
                 .url("https://github.com/rife2/bld-detekt")
-                .developer(
-                        new PublishDeveloper()
-                                .id("ethauvin")
-                                .name("Erik C. Thauvin")
-                                .email("erik@thauvin.net")
-                                .url("https://erik.thauvin.net/")
+                .developer(new PublishDeveloper()
+                        .id("ethauvin")
+                        .name("Erik C. Thauvin")
+                        .email("erik@thauvin.net")
+                        .url("https://erik.thauvin.net/")
                 )
-                .license(
-                        new PublishLicense()
-                                .name("The Apache License, Version 2.0")
-                                .url("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                .license(new PublishLicense()
+                        .name("The Apache License, Version 2.0")
+                        .url("https://www.apache.org/licenses/LICENSE-2.0.txt")
                 )
-                .scm(
-                        new PublishScm()
-                                .connection("scm:git:https://github.com/rife2/bld-detekt.git")
-                                .developerConnection("scm:git:git@github.com:rife2/bld-detekt.git")
-                                .url("https://github.com/rife2/bld-detekt")
+                .scm(new PublishScm()
+                        .connection("scm:git:https://github.com/rife2/bld-detekt.git")
+                        .developerConnection("scm:git:git@github.com:rife2/bld-detekt.git")
+                        .url("https://github.com/rife2/bld-detekt")
                 )
                 .signKey(property("sign.key"))
                 .signPassphrase(property("sign.passphrase"));
