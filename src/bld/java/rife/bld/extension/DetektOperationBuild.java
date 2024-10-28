@@ -46,8 +46,8 @@ public class DetektOperationBuild extends Project {
                 .include(dependency("com.uwyn.rife2", "bld", version(2, 1, 0)))
                 .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli", version(1, 23, 7)));
         scope(test)
-                .include(dependency("org.junit.jupiter", "junit-jupiter", version(5, 11, 0)))
-                .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1, 11, 0)))
+                .include(dependency("org.junit.jupiter", "junit-jupiter", version(5, 11, 3)))
+                .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1, 11, 3)))
                 .include(dependency("org.assertj", "assertj-core", version(3, 26, 3)));
         javadocOperation()
                 .javadocOptions()
