@@ -245,7 +245,7 @@ class DetektOperationTest {
 
         var op = new DetektOperation()
                 .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
-                        "Example"))
+                        "example", "Example"))
                 .baseline(baseline)
                 .createBaseline(true);
         op.execute();
@@ -260,7 +260,7 @@ class DetektOperationTest {
     void testExampleMaxIssues() {
         var op = new DetektOperation()
                 .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
-                        "Example"))
+                        "example", "Example"))
                 .maxIssues(8);
         assertThatNoException().isThrownBy(op::execute);
     }
@@ -277,7 +277,7 @@ class DetektOperationTest {
 
         var op = new DetektOperation()
                 .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
-                        "Example"))
+                        "example", "Example"))
                 .report(new Report(ReportId.HTML, html.getAbsolutePath()))
                 .report(new Report(ReportId.XML, xml.getAbsolutePath()))
                 .report(new Report(ReportId.TXT, txt.getAbsolutePath()))
@@ -295,7 +295,7 @@ class DetektOperationTest {
     void testExamplesExecute() {
         var op = new DetektOperation()
                 .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
-                        "Example"))
+                        "example", "Example"))
                 .debug(true);
         assertThatThrownBy(op::execute).isInstanceOf(ExitStatusException.class);
     }
