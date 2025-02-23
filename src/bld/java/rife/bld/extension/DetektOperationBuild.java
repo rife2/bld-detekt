@@ -44,7 +44,7 @@ public class DetektOperationBuild extends Project {
 
         scope(compile)
                 .include(dependency("com.uwyn.rife2", "bld", version(2, 2, 0)))
-                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli", version(1, 23, 7)));
+                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli", version(1, 23, 8)));
         scope(test)
                 .include(dependency("org.junit.jupiter", "junit-jupiter", version(5, 12, 0)))
                 .include(dependency("org.junit.platform", "junit-platform-console-standalone", version(1, 12, 0)))
