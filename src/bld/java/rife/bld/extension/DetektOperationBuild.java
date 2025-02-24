@@ -33,13 +33,13 @@ public class DetektOperationBuild extends Project {
     public DetektOperationBuild() {
         pkg = "rife.bld.extension";
         name = "DetektOperation";
-        version = version(0, 9, 8);
+        version = version(0, 9, 9);
 
         javaRelease = 17;
 
         downloadSources = true;
         autoDownloadPurge = true;
-        
+
         repositories = List.of(MAVEN_LOCAL, MAVEN_CENTRAL, RIFE2_RELEASES, RIFE2_SNAPSHOTS);
 
         scope(compile)
