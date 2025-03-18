@@ -8,7 +8,15 @@
 [![Snapshot](https://flat.badgen.net/maven/v/metadata-url/repo.rife2.com/snapshots/com/uwyn/rife2/bld-detekt/maven-metadata.xml?label=snapshot)](https://repo.rife2.com/#/snapshots/com/uwyn/rife2/bld-detekt)
 [![GitHub CI](https://github.com/rife2/bld-detekt/actions/workflows/bld.yml/badge.svg)](https://github.com/rife2/bld-detekt/actions/workflows/bld.yml)
 
-To install, please refer to the [extensions documentation](https://github.com/rife2/bld/wiki/Extensions).
+To install the latest version, add the following to the `lib/bld/bld-wrapper.properties` file:
+
+```properties
+bld.extension-detekt=com.uwyn.rife2:bld-detekt
+```
+
+For more information, please refer to the [extensions](https://github.com/rife2/bld/wiki/Extensions) documentation.
+
+## Check Source Code with Detekt
 
 To check all Kotlin source code located in the project, add the following to your build file:
 ```java
