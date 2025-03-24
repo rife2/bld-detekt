@@ -101,4 +101,13 @@ public class ExampleBuild extends Project {
                 .input("src/test/kotlin")
                 .execute();
     }
+
+    @BuildCommand(value = "test-ci", summary = "Run detek with a test baseline")
+    public void testCi() throws ExitStatusException, IOException, InterruptedException {
+        // Run detek with the test basline (for CI testing)
+        new DetektOperation()
+                .fromProject(this)
+                .baseline("src/test/resources/detekt-baseline.xml")
+                .execute();
+    }
 }

@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>EmptyIfBlock:Example.kt$Example.Companion${ }</ID>
+    <ID>MagicNumber:Example.kt$Example$5</ID>
+    <ID>NewLineAtEndOfFile:ExampleTest.kt$com.example.ExampleTest.kt</ID>
+    <ID>ThrowingExceptionsWithoutMessageOrCause:Example.kt$Example.Companion$IllegalStateException()</ID>
+    <ID>UseCheckOrError:Example.kt$Example.Companion$throw IllegalStateException()</ID>
+    <ID>VariableNaming:Example.kt$Example$// https://detekt.dev/docs/rules/naming#variablenaming val Message: String get() = "Hello World!"</ID>
+  </CurrentIssues>
+</SmellBaseline>

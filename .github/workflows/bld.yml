@@ -28,9 +28,9 @@ jobs:
         working-directory: examples
         run: ./bld download
 
-      - name: Run tests [examples]
+      - name: Run Detekt [examples]
         working-directory: examples
-        run: ./bld compile test
+        run: ./bld compile test-ci
 
       - name: Download dependencies
         run: ./bld download

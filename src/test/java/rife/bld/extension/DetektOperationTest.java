@@ -244,7 +244,7 @@ class DetektOperationTest {
     void testExampleBaseline() throws IOException, ExitStatusException, InterruptedException {
         var tmpDir = Files.createTempDirectory("bld-detekt-").toFile();
 
-        var baseline = new File(tmpDir, "detekt-baseline.xml");
+        var baseline = new File(tmpDir, "examples/src/test/resources/detekt-baseline.xml");
 
         var op = new DetektOperation()
                 .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
