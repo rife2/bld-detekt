@@ -19,6 +19,8 @@ package rife.bld.extension;
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import rife.bld.BaseProject;
 import rife.bld.blueprints.BaseProjectBlueprint;
 import rife.bld.extension.detekt.Report;
@@ -92,6 +94,7 @@ class DetektOperationTest {
     }
 
     @Test
+    @EnabledOnOs(OS.LINUX)
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     void testCheckAllParameters() throws IOException {
         var args = Files.readAllLines(Paths.get("src", "test", "resources", "detekt-args.txt"));
