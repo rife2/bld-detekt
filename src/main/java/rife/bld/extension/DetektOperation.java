@@ -522,7 +522,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         if (project_ != null) {
             args.add(javaTool());
             args.add("-cp");
-            args.add('"' + getDetektJarList(project_.libBldDirectory()) + '"');
+            args.add(getDetektJarList(project_.libBldDirectory()));
             args.add("io.gitlab.arturbosch.detekt.cli.Main");
 
             // all-rules
@@ -538,13 +538,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             // base-path
             if (isNotBlank(basePath_)) {
                 args.add("--base-path");
-                args.add('"' + cleanPath(basePath_) + '"');
+                args.add(cleanPath(basePath_));
             }
 
             // baseline
             if (isNotBlank(baseline_)) {
                 args.add("--baseline");
-                args.add('"' + cleanPath(baseline_) + '"');
+                args.add(cleanPath(baseline_));
             }
 
             // build-upon-default-config
@@ -555,20 +555,19 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             // classpath
             if (!classpath_.isEmpty()) {
                 args.add("--classpath");
-                args.add('"' + String.join(':' + File.pathSeparator, classpath_.stream().map(this::cleanPath).toList())
-                        + '"');
+                args.add(String.join(File.pathSeparator, classpath_.stream().map(this::cleanPath).toList()));
             }
 
             // config
             if (!config_.isEmpty()) {
                 args.add("-config");
-                args.add('"' + String.join(";", config_.stream().map(this::cleanPath).toList()) + '"');
+                args.add(String.join(";", config_.stream().map(this::cleanPath).toList()));
             }
 
             // config-resource
             if (isNotBlank(configResource_)) {
                 args.add("--config-resource");
-                args.add('"' + cleanPath(configResource_) + '"');
+                args.add(cleanPath(configResource_));
             }
 
             // create-baseline
@@ -589,7 +588,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             // excludes
             if (!excludes_.isEmpty()) {
                 args.add("--excludes");
-                args.add('"' + String.join(",", excludes_.stream().map(this::cleanPath).toList()) + '"');
+                args.add(String.join(",", excludes_.stream().map(this::cleanPath).toList()));
             }
 
             // generate-config
@@ -600,19 +599,19 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             // includes
             if (!includes_.isEmpty()) {
                 args.add("--includes");
-                args.add('"' + String.join(",", includes_.stream().map(this::cleanPath).toList()) + '"');
+                args.add(String.join(",", includes_.stream().map(this::cleanPath).toList()));
             }
 
             // input
             if (!input_.isEmpty()) {
                 args.add("--input");
-                args.add('"' + String.join(",", input_.stream().map(this::cleanPath).toList()) + '"');
+                args.add(String.join(",", input_.stream().map(this::cleanPath).toList()));
             }
 
             // jdk-home
             if (isNotBlank(jdkHome_)) {
                 args.add("--jdk-home");
-                args.add('"' + cleanPath(jdkHome_) + '"');
+                args.add(cleanPath(jdkHome_));
             }
 
             // jvm-target
@@ -641,14 +640,14 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             // plugins
             if (!plugins_.isEmpty()) {
                 args.add("--plugins");
-                args.add('"' + String.join(",", plugins_.stream().map(this::cleanPath).toList()) + '"');
+                args.add(String.join(",", plugins_.stream().map(this::cleanPath).toList()));
             }
 
             // report
             if (!report_.isEmpty()) {
                 report_.forEach(it -> {
                     args.add("--report");
-                    args.add(it.id().name().toLowerCase() + ":\"" + cleanPath(it.path()) + '"');
+                    args.add(it.id().name().toLowerCase() + ":" + cleanPath(it.path()));
                 });
             }
 
