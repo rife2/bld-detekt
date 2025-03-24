@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,6 +56,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             "snakeyaml-engine-",
             "trove4j-");
     private static final Logger LOGGER = Logger.getLogger(DetektOperation.class.getName());
+    private static final String OS_NAME =
+            System.getProperty("os.name") != null ? System.getProperty("os.name").toLowerCase(Locale.US) : null;
     private final Collection<File> classpath_ = new ArrayList<>();
     private final Collection<File> config_ = new ArrayList<>();
     private final Collection<String> excludes_ = new ArrayList<>();
@@ -290,6 +293,17 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         return classPath(paths.stream().map(File::new).toList());
     }
 
+    private String cleanPath(File path) {
+        return cleanPath(path.getAbsolutePath());
+    }
+
+    private String cleanPath(String path) {
+        if (isWindows()) {
+            return path.replaceAll("\\\\", "\\\\\\\\");
+        }
+        return path;
+    }
+
     /**
      * Paths to the config files ({@code path/to/config.yml}).
      *
@@ -322,7 +336,6 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     public DetektOperation config(String... configs) {
         return configStrings(List.of(configs));
     }
-
 
     /**
      * Paths to the config files ({@code path/to/config.yml}).
@@ -509,7 +522,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         if (project_ != null) {
             args.add(javaTool());
             args.add("-cp");
-            args.add(getDetektJarList(project_.libBldDirectory()));
+            args.add('"' + getDetektJarList(project_.libBldDirectory()) + '"');
             args.add("io.gitlab.arturbosch.detekt.cli.Main");
 
             // all-rules
@@ -525,13 +538,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             // base-path
             if (isNotBlank(basePath_)) {
                 args.add("--base-path");
-                args.add(basePath_);
+                args.add('"' + cleanPath(basePath_) + '"');
             }
 
             // baseline
             if (isNotBlank(baseline_)) {
                 args.add("--baseline");
-                args.add(baseline_);
+                args.add('"' + cleanPath(baseline_) + '"');
             }
 
             // build-upon-default-config
@@ -542,19 +555,20 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             // classpath
             if (!classpath_.isEmpty()) {
                 args.add("--classpath");
-                args.add(String.join(File.pathSeparator, classpath_.stream().map(File::getAbsolutePath).toList()));
+                args.add('"' + String.join(':' + File.pathSeparator, classpath_.stream().map(this::cleanPath).toList())
+                        + '"');
             }
 
             // config
             if (!config_.isEmpty()) {
                 args.add("-config");
-                args.add(String.join(";", config_.stream().map(File::getAbsolutePath).toList()));
+                args.add('"' + String.join(";", config_.stream().map(this::cleanPath).toList()) + '"');
             }
 
             // config-resource
             if (isNotBlank(configResource_)) {
                 args.add("--config-resource");
-                args.add(configResource_);
+                args.add('"' + cleanPath(configResource_) + '"');
             }
 
             // create-baseline
@@ -575,7 +589,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             // excludes
             if (!excludes_.isEmpty()) {
                 args.add("--excludes");
-                args.add(String.join(",", excludes_));
+                args.add('"' + String.join(",", excludes_.stream().map(this::cleanPath).toList()) + '"');
             }
 
             // generate-config
@@ -586,19 +600,19 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             // includes
             if (!includes_.isEmpty()) {
                 args.add("--includes");
-                args.add(String.join(",", includes_));
+                args.add('"' + String.join(",", includes_.stream().map(this::cleanPath).toList()) + '"');
             }
 
             // input
             if (!input_.isEmpty()) {
                 args.add("--input");
-                args.add(String.join(",", input_.stream().map(File::getAbsolutePath).toList()));
+                args.add('"' + String.join(",", input_.stream().map(this::cleanPath).toList()) + '"');
             }
 
             // jdk-home
             if (isNotBlank(jdkHome_)) {
                 args.add("--jdk-home");
-                args.add(jdkHome_);
+                args.add('"' + cleanPath(jdkHome_) + '"');
             }
 
             // jvm-target
@@ -627,14 +641,14 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             // plugins
             if (!plugins_.isEmpty()) {
                 args.add("--plugins");
-                args.add(String.join(",", plugins_.stream().map(File::getAbsolutePath).toList()));
+                args.add('"' + String.join(",", plugins_.stream().map(this::cleanPath).toList()) + '"');
             }
 
             // report
             if (!report_.isEmpty()) {
                 report_.forEach(it -> {
                     args.add("--report");
-                    args.add(it.id().name().toLowerCase() + ":" + it.path());
+                    args.add(it.id().name().toLowerCase() + ":\"" + cleanPath(it.path()) + '"');
                 });
             }
 
@@ -693,7 +707,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
                     if (!f.getName().endsWith("-sources.jar") && !f.getName().endsWith("-javadoc.jar")) {
                         for (var m : DETEKT_JARS) {
                             if (f.getName().startsWith(m)) {
-                                jars.add(f.getAbsolutePath());
+                                jars.add(cleanPath(f));
                                 break;
                             }
                         }
@@ -817,6 +831,15 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     private boolean isNotBlank(String s) {
         return s != null && !s.isBlank();
+    }
+
+    /**
+     * Determines if the current operating system is Windows.
+     *
+     * @return true if the operating system is Windows, false otherwise.
+     */
+    private boolean isWindows() {
+        return OS_NAME != null && OS_NAME.contains("win");
     }
 
     /**
