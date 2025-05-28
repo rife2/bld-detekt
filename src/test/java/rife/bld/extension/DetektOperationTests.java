@@ -35,7 +35,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,19 +43,15 @@ import static org.assertj.core.api.Assertions.*;
 
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 class DetektOperationTests {
-    private static final AtomicBoolean FIRST_TIME = new AtomicBoolean(true);
-
     @BeforeAll
     static void beforeAll() {
-        if (FIRST_TIME.getAndSet(false)) {
-            var level = Level.ALL;
-            var logger = Logger.getLogger("rife.bld.extension");
-            var consoleHandler = new ConsoleHandler();
-            consoleHandler.setLevel(level);
-            logger.addHandler(consoleHandler);
-            logger.setLevel(level);
-            logger.setUseParentHandlers(false);
-        }
+        var level = Level.ALL;
+        var logger = Logger.getLogger("rife.bld.extension");
+        var consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(level);
+        logger.addHandler(consoleHandler);
+        logger.setLevel(level);
+        logger.setUseParentHandlers(false);
     }
 
     static void deleteOnExit(File folder) {
