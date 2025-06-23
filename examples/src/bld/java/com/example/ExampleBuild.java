@@ -26,12 +26,12 @@ public class ExampleBuild extends Project {
 
         javaRelease = 17;
 
-        downloadSources = true;
         autoDownloadPurge = true;
+        downloadSources = true;
 
         repositories = List.of(MAVEN_LOCAL, MAVEN_CENTRAL, RIFE2_RELEASES);
 
-        final var kotlin = version(2, 1, 20);
+        final var kotlin = version(2, 2, 0);
         scope(compile)
                 .include(dependency("org.jetbrains.kotlin", "kotlin-stdlib", kotlin));
         scope(test)
@@ -102,9 +102,9 @@ public class ExampleBuild extends Project {
                 .execute();
     }
 
-    @BuildCommand(value = "test-ci", summary = "Run detek with a test baseline")
+    @BuildCommand(value = "test-ci", summary = "Run detekt with a test baseline")
     public void testCi() throws ExitStatusException, IOException, InterruptedException {
-        // Run detek with the test basline (for CI testing)
+        // Run detekt with the test baseline (for CI testing)
         new DetektOperation()
                 .fromProject(this)
                 .baseline("src/test/resources/detekt-baseline.xml")
