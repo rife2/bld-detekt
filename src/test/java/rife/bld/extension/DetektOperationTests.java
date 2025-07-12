@@ -76,18 +76,17 @@ class DetektOperationTests {
     class ConfigTests {
         private final File bar = new File("bar");
         private final File foo = new File("foo");
-        private final DetektOperation op = new DetektOperation();
 
         @Test
         void configAsFileArray() {
-            op.config().clear();
+            var op = new DetektOperation();
             op.config(foo, bar);
             assertThat(op.config()).contains(foo, bar);
         }
 
         @Test
         void configAsFileList() {
-            op.config().clear();
+            var op = new DetektOperation();
             op.config(List.of(foo, bar));
             assertThat(op.config()).contains(foo, bar);
         }
@@ -95,34 +94,34 @@ class DetektOperationTests {
         @Test
         void configAsPathArray() {
             var op = new DetektOperation();
-            op.config().clear();
             op = op.config(foo.toPath(), bar.toPath());
             assertThat(op.config()).contains(foo, bar);
         }
 
         @Test
         void configAsPathList() {
-            op.config().clear();
+            var op = new DetektOperation();
             op.configPaths(List.of(foo.toPath(), bar.toPath()));
             assertThat(op.config()).as("Path...").contains(foo, bar);
         }
 
         @Test
         void configAsStringArray() {
-            op.config().clear();
+            var op = new DetektOperation();
             op.config("foo", "bar");
             assertThat(op.config()).contains(foo, bar);
         }
 
         @Test
         void configAsStringList() {
-            op.config().clear();
+            var op = new DetektOperation();
             op.configStrings(List.of("foo", "bar"));
             assertThat(op.config()).contains(foo, bar);
         }
 
         @Test
         void configResourceAsFile() {
+            var op = new DetektOperation();
             op.configResource(foo);
             assertThat(op.configResource()).isEqualTo(foo.getAbsolutePath());
         }
@@ -136,6 +135,7 @@ class DetektOperationTests {
 
         @Test
         void configResourceAsString() {
+            var op = new DetektOperation();
             op.configResource("foo");
             assertThat(op.configResource()).isEqualTo("foo");
         }
@@ -208,7 +208,6 @@ class DetektOperationTests {
     class OptionsTests {
         private final File bar = new File("bar");
         private final File foo = new File("foo");
-        private final DetektOperation op = new DetektOperation();
 
         @Test
         @EnabledOnOs(OS.LINUX)
@@ -258,17 +257,21 @@ class DetektOperationTests {
             assertThat(op.excludes()).as("excludes[]").containsExactly(".*/build/.*", ".*/resources/.*",
                     "excludes1", "excludes2", "excludes3", "excludes4");
 
-            for (var i = 1; i < 6; i++) {
-                assertThat(op.classPath()).as("classPath[%s]", i).hasSize(5).contains(new File("path" + i));
-                assertThat(op.config()).as("config[%s]", i).hasSize(5).contains(new File("config" + i));
-                assertThat(op.includes()).as("includes[%s]", i).hasSize(5).contains("includes" + i);
-                assertThat(op.input()).as("input[%s]", i).hasSize(5).contains(new File("input" + i));
-                assertThat(op.plugins()).as("plugins[%s]", i).hasSize(5).contains(new File("jar" + i));
-            }
-
-            var params = op.executeConstructProcessCommandList();
-
             try (var softly = new AutoCloseableSoftAssertions()) {
+                for (var i = 1; i < 6; i++) {
+                    softly.assertThat(op.classPath()).as("classPath[%s]", i).hasSize(5)
+                            .contains(new File("path" + i));
+                    softly.assertThat(op.config()).as("config[%s]", i).hasSize(5)
+                            .contains(new File("config" + i));
+                    softly.assertThat(op.includes()).as("includes[%s]", i).hasSize(5)
+                            .contains("includes" + i);
+                    softly.assertThat(op.input()).as("input[%s]", i).hasSize(5)
+                            .contains(new File("input" + i));
+                    softly.assertThat(op.plugins()).as("plugins[%s]", i).hasSize(5)
+                            .contains(new File("jar" + i));
+                }
+
+                var params = op.executeConstructProcessCommandList();
                 for (var p : args) {
                     var found = false;
                     for (var a : params) {
@@ -287,6 +290,7 @@ class DetektOperationTests {
         class BasePathTests {
             @Test
             void basePathAsFile() {
+                var op = new DetektOperation();
                 op.basePath(foo);
                 assertThat(op.basePath()).isEqualTo(foo.getAbsolutePath());
             }
@@ -300,6 +304,7 @@ class DetektOperationTests {
 
             @Test
             void basePathAsString() {
+                var op = new DetektOperation();
                 op.basePath("foo");
                 assertThat(op.basePath()).isEqualTo("foo");
             }
@@ -310,6 +315,7 @@ class DetektOperationTests {
         class BaselineTests {
             @Test
             void baselineAsFile() {
+                var op = new DetektOperation();
                 op.baseline(foo);
                 assertThat(op.baseline()).isEqualTo(foo.getAbsolutePath());
             }
@@ -323,6 +329,7 @@ class DetektOperationTests {
 
             @Test
             void baselineAsString() {
+                var op = new DetektOperation();
                 op.baseline("foo");
                 assertThat(op.baseline()).isEqualTo("foo");
             }
@@ -333,14 +340,14 @@ class DetektOperationTests {
         class ClassPathTests {
             @Test
             void classPathAsFileArray() {
-                op.classPath().clear();
+                var op = new DetektOperation();
                 op.classPath(foo, bar);
                 assertThat(op.classPath()).contains(foo, bar);
             }
 
             @Test
             void classPathAsFileList() {
-                op.classPath().clear();
+                var op = new DetektOperation();
                 op.classPath(List.of(foo, bar));
                 assertThat(op.classPath()).contains(foo, bar);
             }
@@ -354,21 +361,21 @@ class DetektOperationTests {
 
             @Test
             void classPathAsPathList() {
-                op.classPath().clear();
+                var op = new DetektOperation();
                 op.classPathPaths(List.of(foo.toPath(), bar.toPath()));
                 assertThat(op.classPath()).contains(foo, bar);
             }
 
             @Test
             void classPathAsStingArray() {
-                op.classPath().clear();
+                var op = new DetektOperation();
                 op.classPath("foo", "bar");
                 assertThat(op.classPath()).contains(foo, bar);
             }
 
             @Test
             void classPathAsStringList() {
-                op.classPath().clear();
+                var op = new DetektOperation();
                 op.classPathStrings(List.of("foo", "bar"));
                 assertThat(op.classPath()).contains(foo, bar);
             }
@@ -379,14 +386,14 @@ class DetektOperationTests {
         class InputTests {
             @Test
             void inputAsFileArray() {
-                op.input().clear();
+                var op = new DetektOperation();
                 op.input(foo, bar);
                 assertThat(op.input()).contains(foo, bar);
             }
 
             @Test
             void inputAsFileList() {
-                op.input().clear();
+                var op = new DetektOperation();
                 op.input(List.of(foo, bar));
                 assertThat(op.input()).contains(foo, bar);
             }
@@ -400,22 +407,21 @@ class DetektOperationTests {
 
             @Test
             void inputAsPathList() {
-                op.input().clear();
+                var op = new DetektOperation();
                 op.inputPaths(List.of(foo.toPath(), bar.toPath()));
                 assertThat(op.input()).contains(foo, bar);
-                op.input().clear();
             }
 
             @Test
             void inputAsStringArray() {
-                op.input().clear();
+                var op = new DetektOperation();
                 op.input("foo", "bar");
                 assertThat(op.input()).contains(foo, bar);
             }
 
             @Test
             void inputAsStringList() {
-                op.input().clear();
+                var op = new DetektOperation();
                 op.inputStrings(List.of("foo", "bar"));
                 assertThat(op.input()).contains(foo, bar);
             }
@@ -426,14 +432,14 @@ class DetektOperationTests {
         class PluginsTests {
             @Test
             void pluginsAsFileArray() {
-                op.plugins().clear();
+                var op = new DetektOperation();
                 op.plugins(foo, bar);
                 assertThat(op.plugins()).contains(foo, bar);
             }
 
             @Test
             void pluginsAsFileList() {
-                op.plugins().clear();
+                var op = new DetektOperation();
                 op.plugins(List.of(foo, bar));
                 assertThat(op.plugins()).contains(foo, bar);
             }
@@ -447,22 +453,21 @@ class DetektOperationTests {
 
             @Test
             void pluginsAsPathList() {
-                op.plugins().clear();
+                var op = new DetektOperation();
                 op.pluginsPaths(List.of(foo.toPath(), bar.toPath()));
                 assertThat(op.plugins()).contains(foo, bar);
-                op.plugins().clear();
             }
 
             @Test
             void pluginsAsStringArray() {
-                op.plugins().clear();
+                var op = new DetektOperation();
                 op.plugins("foo", "bar");
                 assertThat(op.plugins()).contains(foo, bar);
             }
 
             @Test
             void pluginsAsStringList() {
-                op.plugins().clear();
+                var op = new DetektOperation();
                 op.pluginsStrings(List.of("foo", "bar"));
                 assertThat(op.plugins()).contains(foo, bar);
             }
