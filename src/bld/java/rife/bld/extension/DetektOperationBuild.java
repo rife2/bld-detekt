@@ -47,8 +47,10 @@ public class DetektOperationBuild extends Project {
         repositories = List.of(MAVEN_LOCAL, MAVEN_CENTRAL, RIFE2_RELEASES, RIFE2_SNAPSHOTS);
 
         scope(compile)
-                .include(dependency("com.uwyn.rife2", "bld", version(2, 3, 0)))
-                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli", version(1, 23, 8)));
+                .include(dependency("com.uwyn.rife2", "bld",
+                        version(2, 3, 0)))
+                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli",
+                        version(1, 23, 8)));
         scope(test)
                 .include(dependency("org.junit.jupiter", "junit-jupiter",
                         version(5, 13, 4)))

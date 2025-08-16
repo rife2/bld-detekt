@@ -23,7 +23,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.junit.jupiter.api.io.TempDir;
 import rife.bld.BaseProject;
+import rife.bld.Project;
 import rife.bld.blueprints.BaseProjectBlueprint;
 import rife.bld.extension.detekt.Report;
 import rife.bld.extension.detekt.ReportId;
@@ -32,9 +34,9 @@ import rife.bld.operations.exceptions.ExitStatusException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,15 +56,37 @@ class DetektOperationTests {
         logger.setUseParentHandlers(false);
     }
 
-    static void deleteOnExit(File folder) {
-        folder.deleteOnExit();
-        for (var f : Objects.requireNonNull(folder.listFiles())) {
-            if (f.isDirectory()) {
-                deleteOnExit(f);
-            } else {
-                f.deleteOnExit();
-            }
-        }
+    @Test
+    void allOverloadedMethods() {
+        // Test File, Path, and String overloads
+        var baseFile = new File("/tmp/base");
+        var baselinePath = Path.of("/tmp/baseline.xml");
+        var configResourceString = "my-config.yml";
+
+        var op = new DetektOperation()
+                .basePath(baseFile)
+                .baseline(baselinePath)
+                .configResource(configResourceString);
+
+        assertThat(op.basePath()).isEqualTo(baseFile.getAbsolutePath());
+        assertThat(op.baseline()).isEqualTo(baselinePath.toFile().getAbsolutePath());
+        assertThat(op.configResource()).isEqualTo(configResourceString);
+
+        // Test collection overloads
+        var inputFile = new File("input.kt");
+        var pluginPath = Path.of("plugin.jar");
+        var configString = "config.yml";
+        var classpathString = "cp.jar";
+
+        op.input(inputFile)
+                .plugins(pluginPath)
+                .config(configString)
+                .classPath(classpathString);
+
+        assertThat(op.input()).extracting(File::getPath).contains("input.kt");
+        assertThat(op.plugins()).extracting(File::getPath).contains("plugin.jar");
+        assertThat(op.config()).extracting(File::getPath).contains("config.yml");
+        assertThat(op.classPath()).extracting(File::getPath).contains("cp.jar");
     }
 
     @Test
@@ -144,9 +168,11 @@ class DetektOperationTests {
     @Nested
     @DisplayName("Example Tests")
     class ExampleTests {
+        @TempDir
+        private File tmpDir;
+
         @Test
         void exampleBaseline() throws IOException, ExitStatusException, InterruptedException {
-            var tmpDir = Files.createTempDirectory("bld-detekt-").toFile();
             var baseline = new File(tmpDir, "examples/src/test/resources/detekt-baseline.xml");
             var op = new DetektOperation()
                     .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
@@ -155,7 +181,6 @@ class DetektOperationTests {
                     .createBaseline(true);
 
             op.execute();
-            deleteOnExit(tmpDir);
             assertThat(baseline).exists();
         }
 
@@ -169,8 +194,7 @@ class DetektOperationTests {
         }
 
         @Test
-        void exampleReports() throws IOException {
-            var tmpDir = Files.createTempDirectory("bld-detekt-").toFile();
+        void exampleReports() {
             var html = new File(tmpDir, "report.html");
             var xml = new File(tmpDir, "report.xml");
             var txt = new File(tmpDir, "report.txt");
@@ -187,8 +211,6 @@ class DetektOperationTests {
                     .report(new Report(ReportId.SARIF, sarif.getAbsolutePath()));
 
             assertThatThrownBy(op::execute).isInstanceOf(ExitStatusException.class);
-
-            deleteOnExit(tmpDir);
 
             List.of(html, xml, txt, md, sarif).forEach(it -> assertThat(it).exists());
         }
@@ -471,6 +493,116 @@ class DetektOperationTests {
                 op.pluginsStrings(List.of("foo", "bar"));
                 assertThat(op.plugins()).contains(foo, bar);
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("Process Command List Tests")
+    class ProcessCommandListTests {
+        @Test
+        void processCommandListWithBooleanFlags() {
+            var op = new DetektOperation()
+                    .fromProject(new Project())
+                    .allRules(true)
+                    .autoCorrect(true)
+                    .buildUponDefaultConfig(true)
+                    .createBaseline(true)
+                    .debug(true)
+                    .disableDefaultRuleSets(true)
+                    .generateConfig(true)
+                    .parallel(true);
+
+            var commandList = op.executeConstructProcessCommandList();
+
+            assertThat(commandList).contains(
+                    "--all-rules",
+                    "--auto-correct",
+                    "--build-upon-default-config",
+                    "--create-baseline",
+                    "--debug",
+                    "--disable-default-rulesets",
+                    "--generate-config",
+                    "--parallel"
+            );
+        }
+
+        @Test
+        void processCommandListWithCollectionFlags() {
+            var input1 = new File("/src/main/Input1.kt");
+            var input2 = new File("/src/main/Input2.kt");
+            var plugin1 = new File("/plugins/plugin1.jar");
+            var plugin2 = new File("/plugins/plugin2.jar");
+            var config1 = new File("detekt.yml");
+            var config2 = new File("detekt-override.yml");
+            var cp1 = new File("lib/dep1.jar");
+            var cp2 = new File("lib/dep2.jar");
+
+            var op = new DetektOperation()
+                    .fromProject(new Project())
+                    .input(input1, input2)
+                    .plugins(plugin1, plugin2)
+                    .config(config1, config2)
+                    .classPath(cp1, cp2)
+                    .includes(".*Include.*", ".*Keep.*")
+                    .excludes(".*Exclude.*"); // Note: fromProject adds defaults, so we test adding more
+
+            var commandList = op.executeConstructProcessCommandList();
+
+            assertThat(commandList).contains("--input", input1.getAbsolutePath() + "," + input2.getAbsolutePath());
+            assertThat(commandList).contains("--plugins", plugin1.getAbsolutePath() + "," + plugin2.getAbsolutePath());
+            assertThat(commandList).contains("-config", config1.getAbsolutePath() + ";" + config2.getAbsolutePath());
+            assertThat(commandList).contains("--classpath", cp1.getAbsolutePath() + File.pathSeparator + cp2.getAbsolutePath());
+            assertThat(commandList).contains("--includes", ".*Include.*,.*Keep.*");
+            assertThat(commandList).contains("--excludes", ".*/build/.*,.*/resources/.*,.*Exclude.*");
+        }
+
+        @Test
+        void processCommandListWithPathAndStringFlags() {
+            var op = new DetektOperation()
+                    .fromProject(new Project())
+                    .basePath("/tmp/base")
+                    .baseline("/tmp/baseline.xml")
+                    .configResource("my-config.yml")
+                    .jdkHome("/opt/jdk")
+                    .jvmTarget("17")
+                    .languageVersion("1.9")
+                    .maxIssues(10);
+
+            var commandList = op.executeConstructProcessCommandList();
+
+            assertThat(commandList).contains(
+                    "--base-path", "/tmp/base",
+                    "--baseline", "/tmp/baseline.xml",
+                    "--config-resource", "my-config.yml",
+                    "--jdk-home", "/opt/jdk",
+                    "--jvm-target", "17",
+                    "--language-version", "1.9",
+                    "--max-issues", "10"
+            );
+        }
+
+        @Test
+        void processCommandListWithReports() {
+            var op = new DetektOperation()
+                    .fromProject(new Project())
+                    .report(new Report(ReportId.XML, "/reports/detekt.xml"),
+                            new Report(ReportId.HTML, "/reports/detekt.html"));
+
+            var commandList = op.executeConstructProcessCommandList();
+
+            assertThat(commandList).contains(
+                    "--report", "xml:/reports/detekt.xml",
+                    "--report", "html:/reports/detekt.html"
+            );
+        }
+
+        @Test
+        void processCommandListWithZeroMaxIssues() {
+            var op = new DetektOperation()
+                    .fromProject(new Project())
+                    .maxIssues(0);
+            var commandList = op.executeConstructProcessCommandList();
+            assertThat(commandList).doesNotContain("--max-issues");
         }
     }
 }
