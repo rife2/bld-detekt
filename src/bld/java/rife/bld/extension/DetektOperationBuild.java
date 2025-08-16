@@ -71,7 +71,7 @@ public class DetektOperationBuild extends Project {
                 .info()
                 .groupId("com.uwyn.rife2")
                 .artifactId("bld-detekt")
-                .description("bld Detekt Extension")
+                .description("Detekt Extension for bld")
                 .url("https://github.com/rife2/bld-detekt")
                 .developer(new PublishDeveloper()
                         .id("ethauvin")
