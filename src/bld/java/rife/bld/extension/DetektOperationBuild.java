@@ -52,6 +52,8 @@ public class DetektOperationBuild extends Project {
                 .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli",
                         version(1, 23, 8)));
         scope(test)
+                .include(dependency("com.uwyn.rife2", "bld-extensions-testing-helpers",
+                        version(0, 9, 3, "SNAPSHOT")))
                 .include(dependency("org.junit.jupiter", "junit-jupiter",
                         version(5, 13, 4)))
                 .include(dependency("org.junit.platform", "junit-platform-console-standalone",
@@ -100,6 +102,7 @@ public class DetektOperationBuild extends Project {
     public void pmd() throws Exception {
         new PmdOperation()
                 .fromProject(this)
+                .failOnViolation(true)
                 .ruleSets("config/pmd.xml")
                 .execute();
     }
