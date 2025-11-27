@@ -16,6 +16,7 @@
 
 package rife.bld.extension;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import rife.bld.BaseProject;
 import rife.bld.extension.detekt.Report;
 import rife.bld.extension.detekt.ReportId;
@@ -56,13 +57,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             "snakeyaml-engine-",
             "trove4j-");
     private static final Logger LOGGER = Logger.getLogger(DetektOperation.class.getName());
-    private final Collection<File> classpath_ = new ArrayList<>();
-    private final Collection<File> config_ = new ArrayList<>();
-    private final Collection<String> excludes_ = new ArrayList<>();
-    private final Collection<String> includes_ = new ArrayList<>();
-    private final Collection<File> input_ = new ArrayList<>();
-    private final Collection<File> plugins_ = new ArrayList<>();
-    private final Collection<Report> report_ = new ArrayList<>();
+    private final List<File> classpath_ = new ArrayList<>();
+    private final List<File> config_ = new ArrayList<>();
+    private final List<String> excludes_ = new ArrayList<>();
+    private final List<String> includes_ = new ArrayList<>();
+    private final List<File> input_ = new ArrayList<>();
+    private final List<File> plugins_ = new ArrayList<>();
+    private final List<Report> report_ = new ArrayList<>();
     private boolean allRules_;
     private boolean autoCorrect_;
     private String basePath_;
@@ -263,7 +264,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @return the paths
      */
-    public Collection<File> classPath() {
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public List<File> classPath() {
         return classpath_;
     }
 
@@ -341,7 +343,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @return the config files paths.
      */
-    public Collection<File> config() {
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public List<File> config() {
         return config_;
     }
 
@@ -468,7 +471,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @return the globbing patterns
      */
-    public Collection<String> excludes() {
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public List<String> excludes() {
         return excludes_;
     }
 
@@ -480,6 +484,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @throws ExitStatusException  when the exit status was changed during the operation
      */
     @Override
+    @SuppressFBWarnings("PATH_TRAVERSAL_IN")
     public void execute() throws IOException, InterruptedException, ExitStatusException {
         if (project_ == null) {
             if (LOGGER.isLoggable(Level.SEVERE) && !silent()) {
@@ -505,7 +510,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     @Override
     protected List<String> executeConstructProcessCommandList() {
-        final List<String> args = new ArrayList<>();
+        final List<String> args = new ArrayList<>(50);
         if (project_ != null) {
             args.add(javaTool());
             args.add("-cp");
@@ -659,6 +664,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     @Override
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public DetektOperation fromProject(BaseProject project) {
         project_ = project;
         var baseline = new File(project.workDirectory(), "detekt-baseline.xml");
@@ -732,7 +738,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @return the globbing patterns
      */
-    public Collection<String> includes() {
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public List<String> includes() {
         return includes_;
     }
 
@@ -786,7 +793,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @return the input paths
      */
-    public Collection<File> input() {
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public List<File> input() {
         return input_;
     }
 
@@ -934,7 +942,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @return the jars paths
      */
-    public Collection<File> plugins() {
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public List<File> plugins() {
         return plugins_;
     }
 

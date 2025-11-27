@@ -27,8 +27,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static rife.bld.dependencies.Repository.*;
-import static rife.bld.dependencies.Scope.compile;
-import static rife.bld.dependencies.Scope.test;
+import static rife.bld.dependencies.Scope.*;
 import static rife.bld.operations.JavadocOptions.DocLinkOption.NO_MISSING;
 
 public class DetektOperationBuild extends Project {
@@ -50,6 +49,9 @@ public class DetektOperationBuild extends Project {
                         version(2, 3, 0)))
                 .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli",
                         version(1, 23, 8)));
+        scope(provided)
+                .include(dependency("com.github.spotbugs", "spotbugs-annotations",
+                        version(4, 9, 8)));
         scope(test)
                 .include(dependency("com.uwyn.rife2", "bld-extensions-testing-helpers",
                         version(0, 9, 4)))
@@ -126,5 +128,13 @@ public class DetektOperationBuild extends Project {
         var op = testOperation().fromProject(this);
         op.testToolOptions().reportsDir(new File(testResultsDir));
         op.execute();
+    }
+
+    @BuildCommand(summary = "Runs SpotBugs on this project")
+    public void spotbugs() throws Exception {
+        new SpotBugsOperation()
+                .fromProject(this)
+                .home("/opt/spotbugs")
+                .execute();
     }
 }

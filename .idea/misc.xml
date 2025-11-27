@@ -4,6 +4,7 @@
     <pattern value="rife.bld.extension.DetektOperationBuild" method="pmd" />
     <pattern value="rife.bld.extension.DetektOperationBuild" />
     <pattern value="rife.bld.extension.DetektOperationBuild" method="reporter" />
+    <pattern value="rife.bld.extension.DetektOperationBuild" method="spotbugs" />
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="17" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build" />
