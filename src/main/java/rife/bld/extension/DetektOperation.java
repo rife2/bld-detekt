@@ -20,6 +20,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import rife.bld.BaseProject;
 import rife.bld.extension.detekt.Report;
 import rife.bld.extension.detekt.ReportId;
+import rife.bld.extension.tools.TextUtils;
 import rife.bld.operations.AbstractProcessOperation;
 import rife.bld.operations.exceptions.ExitStatusException;
 
@@ -80,6 +81,205 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     private int maxIssues_;
     private boolean parallel_;
     private BaseProject project_;
+
+    /**
+     * Performs the operation.
+     *
+     * @throws InterruptedException when the operation was interrupted
+     * @throws IOException          when an exception occurred during the execution of the process
+     * @throws ExitStatusException  when the exit status was changed during the operation
+     */
+    @Override
+    @SuppressFBWarnings("PATH_TRAVERSAL_IN")
+    public void execute() throws IOException, InterruptedException, ExitStatusException {
+        if (project_ == null) {
+            if (LOGGER.isLoggable(Level.SEVERE) && !silent()) {
+                LOGGER.severe("A project must be specified.");
+            }
+            throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
+        } else {
+            super.execute();
+            if (successful_ && LOGGER.isLoggable(Level.INFO) && !silent()) {
+                if (createBaseline_) {
+                    LOGGER.info("Detekt baseline generated successfully: "
+                            + "file://" + new File(baseline_).toURI().getPath());
+                } else {
+                    LOGGER.info("Detekt operation finished successfully.");
+                }
+            }
+        }
+    }
+
+    /**
+     * Part of the {@link #execute} operation, constructs the command list
+     * to use for building the process.
+     */
+    @Override
+    protected List<String> executeConstructProcessCommandList() {
+        final List<String> args = new ArrayList<>(50);
+        if (project_ != null) {
+            args.add(javaTool());
+            args.add("-cp");
+            args.add(getDetektJarList(project_.libBldDirectory()));
+            args.add("io.gitlab.arturbosch.detekt.cli.Main");
+
+            // all-rules
+            if (allRules_) {
+                args.add("--all-rules");
+            }
+
+            // auto-correct
+            if (autoCorrect_) {
+                args.add("--auto-correct");
+            }
+
+            // base-path
+            if (TextUtils.isNotBlank(basePath_)) {
+                args.add("--base-path");
+                args.add(basePath_);
+            }
+
+            // baseline
+            if (TextUtils.isNotBlank(baseline_)) {
+                args.add("--baseline");
+                args.add(baseline_);
+            }
+
+            // build-upon-default-config
+            if (buildUponDefaultConfig_) {
+                args.add("--build-upon-default-config");
+            }
+
+            // classpath
+            if (!classpath_.isEmpty()) {
+                args.add("--classpath");
+                args.add(String.join(File.pathSeparator, classpath_.stream().map(File::getAbsolutePath).toList()));
+            }
+
+            // config
+            if (!config_.isEmpty()) {
+                args.add("-config");
+                args.add(String.join(";", config_.stream().map(File::getAbsolutePath).toList()));
+            }
+
+            // config-resource
+            if (TextUtils.isNotBlank(configResource_)) {
+                args.add("--config-resource");
+                args.add(configResource_);
+            }
+
+            // create-baseline
+            if (createBaseline_) {
+                args.add("--create-baseline");
+            }
+
+            // debug
+            if (debug_) {
+                args.add("--debug");
+            }
+
+            // disable-default-rulesets
+            if (disableDefaultRuleSets_) {
+                args.add("--disable-default-rulesets");
+            }
+
+            // excludes
+            if (!excludes_.isEmpty()) {
+                args.add("--excludes");
+                args.add(String.join(",", excludes_));
+            }
+
+            // generate-config
+            if (generateConfig_) {
+                args.add("--generate-config");
+            }
+
+            // includes
+            if (!includes_.isEmpty()) {
+                args.add("--includes");
+                args.add(String.join(",", includes_));
+            }
+
+            // input
+            if (!input_.isEmpty()) {
+                args.add("--input");
+                args.add(String.join(",", input_.stream().map(File::getAbsolutePath).toList()));
+            }
+
+            // jdk-home
+            if (TextUtils.isNotBlank(jdkHome_)) {
+                args.add("--jdk-home");
+                args.add(jdkHome_);
+            }
+
+            // jvm-target
+            if (TextUtils.isNotBlank(jvmTarget_)) {
+                args.add("--jvm-target");
+                args.add(jvmTarget_);
+            }
+
+            // language-version
+            if (TextUtils.isNotBlank(languageVersion_)) {
+                args.add("--language-version");
+                args.add(languageVersion_);
+            }
+
+            // max-issues
+            if (maxIssues_ > 0) {
+                args.add("--max-issues");
+                args.add(String.valueOf(maxIssues_));
+            }
+
+            // parallel
+            if (parallel_) {
+                args.add("--parallel");
+            }
+
+            // plugins
+            if (!plugins_.isEmpty()) {
+                args.add("--plugins");
+                args.add(String.join(",", plugins_.stream().map(File::getAbsolutePath).toList()));
+            }
+
+            // report
+            if (!report_.isEmpty()) {
+                report_.forEach(it -> {
+                    args.add("--report");
+                    args.add(it.id().name().toLowerCase() + ":" + it.path());
+                });
+            }
+
+            if (LOGGER.isLoggable(Level.FINE) && !silent()) {
+                LOGGER.fine(String.join(" ", args.stream().filter(TextUtils::isNotBlank).toList()));
+            }
+        }
+
+        return args;
+    }
+
+    /**
+     * Configures the operation from a {@link BaseProject}.
+     * <p>
+     * Sets the following:
+     * <ul>
+     *     <li>{@link #baseline baseline} to {@code detekt-baseline.xml}, if it exists</li>
+     *     <li>{@link #excludes excludes} to exclude {@code build} and {@code resources} directories</li>
+     * </ul>
+     *
+     * @param project the project to configure the operation from
+     * @return this operation instance
+     */
+    @Override
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
+    public DetektOperation fromProject(BaseProject project) {
+        project_ = project;
+        var baseline = new File(project.workDirectory(), "detekt-baseline.xml");
+        if (baseline.exists()) {
+            baseline_ = baseline.getAbsolutePath();
+        }
+        excludes(".*/build/.*", ".*/resources/.*");
+        return this;
+    }
 
     /**
      * Activates all available (even unstable) rules.
@@ -244,7 +444,6 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     public DetektOperation classPath(String... paths) {
         return classPathStrings(List.of(paths));
     }
-
 
     /**
      * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
@@ -477,205 +676,6 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Performs the operation.
-     *
-     * @throws InterruptedException when the operation was interrupted
-     * @throws IOException          when an exception occurred during the execution of the process
-     * @throws ExitStatusException  when the exit status was changed during the operation
-     */
-    @Override
-    @SuppressFBWarnings("PATH_TRAVERSAL_IN")
-    public void execute() throws IOException, InterruptedException, ExitStatusException {
-        if (project_ == null) {
-            if (LOGGER.isLoggable(Level.SEVERE) && !silent()) {
-                LOGGER.severe("A project must be specified.");
-            }
-            throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
-        } else {
-            super.execute();
-            if (successful_ && LOGGER.isLoggable(Level.INFO) && !silent()) {
-                if (createBaseline_) {
-                    LOGGER.info("Detekt baseline generated successfully: "
-                            + "file://" + new File(baseline_).toURI().getPath());
-                } else {
-                    LOGGER.info("Detekt operation finished successfully.");
-                }
-            }
-        }
-    }
-
-    /**
-     * Part of the {@link #execute} operation, constructs the command list
-     * to use for building the process.
-     */
-    @Override
-    protected List<String> executeConstructProcessCommandList() {
-        final List<String> args = new ArrayList<>(50);
-        if (project_ != null) {
-            args.add(javaTool());
-            args.add("-cp");
-            args.add(getDetektJarList(project_.libBldDirectory()));
-            args.add("io.gitlab.arturbosch.detekt.cli.Main");
-
-            // all-rules
-            if (allRules_) {
-                args.add("--all-rules");
-            }
-
-            // auto-correct
-            if (autoCorrect_) {
-                args.add("--auto-correct");
-            }
-
-            // base-path
-            if (isNotBlank(basePath_)) {
-                args.add("--base-path");
-                args.add(basePath_);
-            }
-
-            // baseline
-            if (isNotBlank(baseline_)) {
-                args.add("--baseline");
-                args.add(baseline_);
-            }
-
-            // build-upon-default-config
-            if (buildUponDefaultConfig_) {
-                args.add("--build-upon-default-config");
-            }
-
-            // classpath
-            if (!classpath_.isEmpty()) {
-                args.add("--classpath");
-                args.add(String.join(File.pathSeparator, classpath_.stream().map(File::getAbsolutePath).toList()));
-            }
-
-            // config
-            if (!config_.isEmpty()) {
-                args.add("-config");
-                args.add(String.join(";", config_.stream().map(File::getAbsolutePath).toList()));
-            }
-
-            // config-resource
-            if (isNotBlank(configResource_)) {
-                args.add("--config-resource");
-                args.add(configResource_);
-            }
-
-            // create-baseline
-            if (createBaseline_) {
-                args.add("--create-baseline");
-            }
-
-            // debug
-            if (debug_) {
-                args.add("--debug");
-            }
-
-            // disable-default-rulesets
-            if (disableDefaultRuleSets_) {
-                args.add("--disable-default-rulesets");
-            }
-
-            // excludes
-            if (!excludes_.isEmpty()) {
-                args.add("--excludes");
-                args.add(String.join(",", excludes_));
-            }
-
-            // generate-config
-            if (generateConfig_) {
-                args.add("--generate-config");
-            }
-
-            // includes
-            if (!includes_.isEmpty()) {
-                args.add("--includes");
-                args.add(String.join(",", includes_));
-            }
-
-            // input
-            if (!input_.isEmpty()) {
-                args.add("--input");
-                args.add(String.join(",", input_.stream().map(File::getAbsolutePath).toList()));
-            }
-
-            // jdk-home
-            if (isNotBlank(jdkHome_)) {
-                args.add("--jdk-home");
-                args.add(jdkHome_);
-            }
-
-            // jvm-target
-            if (isNotBlank(jvmTarget_)) {
-                args.add("--jvm-target");
-                args.add(jvmTarget_);
-            }
-
-            // language-version
-            if (isNotBlank(languageVersion_)) {
-                args.add("--language-version");
-                args.add(languageVersion_);
-            }
-
-            // max-issues
-            if (maxIssues_ > 0) {
-                args.add("--max-issues");
-                args.add(String.valueOf(maxIssues_));
-            }
-
-            // parallel
-            if (parallel_) {
-                args.add("--parallel");
-            }
-
-            // plugins
-            if (!plugins_.isEmpty()) {
-                args.add("--plugins");
-                args.add(String.join(",", plugins_.stream().map(File::getAbsolutePath).toList()));
-            }
-
-            // report
-            if (!report_.isEmpty()) {
-                report_.forEach(it -> {
-                    args.add("--report");
-                    args.add(it.id().name().toLowerCase() + ":" + it.path());
-                });
-            }
-
-            if (LOGGER.isLoggable(Level.FINE) && !silent()) {
-                LOGGER.fine(String.join(" ", args.stream().filter(this::isNotBlank).toList()));
-            }
-        }
-
-        return args;
-    }
-
-    /**
-     * Configures the operation from a {@link BaseProject}.
-     * <p>
-     * Sets the following:
-     * <ul>
-     *     <li>{@link #baseline baseline} to {@code detekt-baseline.xml}, if it exists</li>
-     *     <li>{@link #excludes excludes} to exclude {@code build} and {@code resources} directories</li>
-     * </ul>
-     *
-     * @param project the project to configure the operation from
-     * @return this operation instance
-     */
-    @Override
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public DetektOperation fromProject(BaseProject project) {
-        project_ = project;
-        var baseline = new File(project.workDirectory(), "detekt-baseline.xml");
-        if (baseline.exists()) {
-            baseline_ = baseline.getAbsolutePath();
-        }
-        excludes(".*/build/.*", ".*/resources/.*");
-        return this;
-    }
-
-    /**
      * Export default config. Path can be specified with {@link #config config} option.
      * <p>
      * Default path: {@code default-detekt-config.yml}
@@ -686,28 +686,6 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     public DetektOperation generateConfig(boolean generate) {
         generateConfig_ = generate;
         return this;
-    }
-
-    // Retrieves the matching JARs files from the given directory.
-    private String getDetektJarList(File directory) {
-        var jars = new ArrayList<String>();
-
-        if (directory.isDirectory()) {
-            var files = directory.listFiles();
-            if (files != null) {
-                for (var f : files) {
-                    if (!f.getName().endsWith("-sources.jar") && !f.getName().endsWith("-javadoc.jar")) {
-                        for (var m : DETEKT_JARS) {
-                            if (f.getName().startsWith(m)) {
-                                jars.add(f.getAbsolutePath());
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return String.join(File.pathSeparator, jars);
     }
 
     /**
@@ -818,13 +796,6 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     public DetektOperation inputStrings(Collection<String> paths) {
         return input(paths.stream().map(File::new).toList());
-    }
-
-    /*
-     * Determines if a string is not blank.
-     */
-    private boolean isNotBlank(String s) {
-        return s != null && !s.isBlank();
     }
 
     /**
@@ -978,5 +949,27 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     public DetektOperation report(Report... reports) {
         report_.addAll(List.of(reports));
         return this;
+    }
+
+    // Retrieves the matching JARs files from the given directory.
+    private String getDetektJarList(File directory) {
+        var jars = new ArrayList<String>();
+
+        if (directory.isDirectory()) {
+            var files = directory.listFiles();
+            if (files != null) {
+                for (var f : files) {
+                    if (!f.getName().endsWith("-sources.jar") && !f.getName().endsWith("-javadoc.jar")) {
+                        for (var m : DETEKT_JARS) {
+                            if (f.getName().startsWith(m)) {
+                                jars.add(f.getAbsolutePath());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return String.join(File.pathSeparator, jars);
     }
 }
