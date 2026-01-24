@@ -45,6 +45,7 @@ import static org.assertj.core.api.Assertions.*;
 @ExtendWith(LoggingExtension.class)
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 class DetektOperationTests {
+
     @RegisterExtension
     private static final LoggingExtension LOGGING_EXTENSION = new LoggingExtension(DetektOperation.class.getName());
 
@@ -90,6 +91,7 @@ class DetektOperationTests {
     @Nested
     @DisplayName("Config Tests")
     class ConfigTests {
+
         private final File bar = new File("bar");
         private final File foo = new File("foo");
 
@@ -160,6 +162,7 @@ class DetektOperationTests {
     @Nested
     @DisplayName("Example Tests")
     class ExampleTests {
+
         @TempDir
         private File tmpDir;
 
@@ -220,6 +223,7 @@ class DetektOperationTests {
     @Nested
     @DisplayName("Options Tests")
     class OptionsTests {
+
         private final File bar = new File("bar");
         private final File foo = new File("foo");
 
@@ -302,6 +306,7 @@ class DetektOperationTests {
         @Nested
         @DisplayName("Base Path Tests")
         class BasePathTests {
+
             @Test
             void basePathAsFile() {
                 var op = new DetektOperation();
@@ -327,6 +332,7 @@ class DetektOperationTests {
         @Nested
         @DisplayName("Baseline Tests")
         class BaselineTests {
+
             @Test
             void baselineAsFile() {
                 var op = new DetektOperation();
@@ -352,6 +358,7 @@ class DetektOperationTests {
         @Nested
         @DisplayName("ClassPath Tests")
         class ClassPathTests {
+
             @Test
             void classPathAsFileArray() {
                 var op = new DetektOperation();
@@ -398,6 +405,7 @@ class DetektOperationTests {
         @Nested
         @DisplayName("Input Tests")
         class InputTests {
+
             @Test
             void inputAsFileArray() {
                 var op = new DetektOperation();
@@ -444,6 +452,7 @@ class DetektOperationTests {
         @Nested
         @DisplayName("Plugins Tests")
         class PluginsTests {
+
             @Test
             void pluginsAsFileArray() {
                 var op = new DetektOperation();
@@ -491,6 +500,7 @@ class DetektOperationTests {
     @Nested
     @DisplayName("Process Command List Tests")
     class ProcessCommandListTests {
+
         @Test
         void processCommandListWithBooleanFlags() {
             var op = new DetektOperation()

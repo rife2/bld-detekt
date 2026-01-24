@@ -25,4 +25,5 @@ package rife.bld.extension.detekt;
  * @since 1.0
  */
 public record Report(ReportId id, String path) {
+
 }

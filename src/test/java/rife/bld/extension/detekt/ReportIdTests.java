@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ReportIdTests {
+
     @Test
     @DisplayName("Should contain all expected report IDs in the correct order")
     void enumValues() {

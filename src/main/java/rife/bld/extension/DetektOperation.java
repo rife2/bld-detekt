@@ -20,7 +20,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import rife.bld.BaseProject;
 import rife.bld.extension.detekt.Report;
 import rife.bld.extension.detekt.ReportId;
-import rife.bld.extension.tools.TextUtils;
+import rife.bld.extension.tools.ObjectTools;
+import rife.bld.extension.tools.TextTools;
 import rife.bld.operations.AbstractProcessOperation;
 import rife.bld.operations.exceptions.ExitStatusException;
 
@@ -40,6 +41,7 @@ import java.util.logging.Logger;
  * @since 1.0
  */
 public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
+
     private static final List<String> DETEKT_JARS = List.of(
             "annotations-",
             "contester-breakpoint-",
@@ -134,13 +136,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             }
 
             // base-path
-            if (TextUtils.isNotBlank(basePath_)) {
+            if (TextTools.isNotBlank(basePath_)) {
                 args.add("--base-path");
                 args.add(basePath_);
             }
 
             // baseline
-            if (TextUtils.isNotBlank(baseline_)) {
+            if (TextTools.isNotBlank(baseline_)) {
                 args.add("--baseline");
                 args.add(baseline_);
             }
@@ -163,7 +165,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             }
 
             // config-resource
-            if (TextUtils.isNotBlank(configResource_)) {
+            if (TextTools.isNotBlank(configResource_)) {
                 args.add("--config-resource");
                 args.add(configResource_);
             }
@@ -207,19 +209,19 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             }
 
             // jdk-home
-            if (TextUtils.isNotBlank(jdkHome_)) {
+            if (TextTools.isNotBlank(jdkHome_)) {
                 args.add("--jdk-home");
                 args.add(jdkHome_);
             }
 
             // jvm-target
-            if (TextUtils.isNotBlank(jvmTarget_)) {
+            if (TextTools.isNotBlank(jvmTarget_)) {
                 args.add("--jvm-target");
                 args.add(jvmTarget_);
             }
 
             // language-version
-            if (TextUtils.isNotBlank(languageVersion_)) {
+            if (TextTools.isNotBlank(languageVersion_)) {
                 args.add("--language-version");
                 args.add(languageVersion_);
             }
@@ -250,7 +252,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             }
 
             if (LOGGER.isLoggable(Level.FINE) && !silent()) {
-                LOGGER.fine(String.join(" ", args.stream().filter(TextUtils::isNotBlank).toList()));
+                LOGGER.fine(String.join(" ", args.stream().filter(TextTools::isNotBlank).toList()));
             }
         }
 
@@ -418,7 +420,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #classPath(Collection)
      */
     public DetektOperation classPath(File... paths) {
-        return classPath(List.of(paths));
+        if (ObjectTools.isNotEmpty(paths)) {
+            return classPath(List.of(paths));
+        }
+        return this;
     }
 
     /**
@@ -430,7 +435,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #classPathPaths(Collection)
      */
     public DetektOperation classPath(Path... paths) {
-        return classPathPaths(List.of(paths));
+        if (ObjectTools.isNotEmpty(paths)) {
+            return classPathPaths(List.of(paths));
+        }
+        return this;
     }
 
     /**
@@ -442,7 +450,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #classPathStrings(Collection)
      */
     public DetektOperation classPath(String... paths) {
-        return classPathStrings(List.of(paths));
+        if (ObjectTools.isNotEmpty(paths)) {
+            return classPathStrings(List.of(paths));
+        }
+        return this;
     }
 
     /**
@@ -454,7 +465,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #classPath(File...)
      */
     public DetektOperation classPath(Collection<File> paths) {
-        classpath_.addAll(paths);
+        if (ObjectTools.isNotEmpty(paths)) {
+            classpath_.addAll(paths);
+        }
         return this;
     }
 
@@ -477,7 +490,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #classPath(Path...)
      */
     public DetektOperation classPathPaths(Collection<Path> paths) {
-        return classPath(paths.stream().map(Path::toFile).toList());
+        if (ObjectTools.isNotEmpty(paths)) {
+            return classPath(paths.stream().map(Path::toFile).toList());
+        }
+        return this;
     }
 
     /**
@@ -489,7 +505,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #classPath(String...)
      */
     public DetektOperation classPathStrings(Collection<String> paths) {
-        return classPath(paths.stream().map(File::new).toList());
+        if (ObjectTools.isNotEmpty(paths)) {
+            return classPath(paths.stream().map(File::new).toList());
+        }
+        return this;
     }
 
     /**
@@ -500,7 +519,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #config(Collection)
      */
     public DetektOperation config(File... configs) {
-        return config(List.of(configs));
+        if (ObjectTools.isNotEmpty(configs)) {
+            return config(List.of(configs));
+        }
+        return this;
     }
 
     /**
@@ -511,7 +533,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #configPaths(Collection)
      */
     public DetektOperation config(Path... configs) {
-        return configPaths(List.of(configs));
+        if (ObjectTools.isNotEmpty(configs)) {
+            return configPaths(List.of(configs));
+        }
+        return this;
     }
 
     /**
@@ -522,7 +547,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #configStrings(Collection)
      */
     public DetektOperation config(String... configs) {
-        return configStrings(List.of(configs));
+        if (ObjectTools.isNotEmpty(configs)) {
+            return configStrings(List.of(configs));
+        }
+        return this;
     }
 
     /**
@@ -533,7 +561,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #config(File...)
      */
     public DetektOperation config(Collection<File> configs) {
-        config_.addAll(configs);
+        if (ObjectTools.isNotEmpty(configs)) {
+            config_.addAll(configs);
+        }
         return this;
     }
 
@@ -555,7 +585,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #config(Path...)
      */
     public DetektOperation configPaths(Collection<Path> configs) {
-        return config(configs.stream().map(Path::toFile).toList());
+        if (ObjectTools.isNotEmpty(configs)) {
+            return config(configs.stream().map(Path::toFile).toList());
+        }
+        return this;
     }
 
     /**
@@ -606,7 +639,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #config(String...)
      */
     public DetektOperation configStrings(Collection<String> configs) {
-        config_.addAll(configs.stream().map(File::new).toList());
+        if (ObjectTools.isNotEmpty(configs)) {
+            config_.addAll(configs.stream().map(File::new).toList());
+        }
         return this;
     }
 
@@ -651,7 +686,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation excludes(String... patterns) {
-        return excludes(List.of(patterns));
+        if (ObjectTools.isNotEmpty(patterns)) {
+            return excludes(List.of(patterns));
+        }
+        return this;
     }
 
     /**
@@ -661,7 +699,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation excludes(Collection<String> patterns) {
-        excludes_.addAll(patterns);
+        if (ObjectTools.isNotEmpty(patterns)) {
+            excludes_.addAll(patterns);
+        }
         return this;
     }
 
@@ -696,7 +736,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation includes(String... patterns) {
-        return includes(List.of(patterns));
+        if (ObjectTools.isNotEmpty(patterns)) {
+            return includes(List.of(patterns));
+        }
+        return this;
     }
 
     /**
@@ -707,7 +750,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation includes(Collection<String> patterns) {
-        includes_.addAll(patterns);
+        if (ObjectTools.isNotEmpty(patterns)) {
+            includes_.addAll(patterns);
+        }
         return this;
     }
 
@@ -729,7 +774,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #input(Collection)
      */
     public DetektOperation input(Collection<File> paths) {
-        input_.addAll(paths);
+        if (ObjectTools.isNotEmpty(paths)) {
+            input_.addAll(paths);
+        }
         return this;
     }
 
@@ -741,7 +788,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #inputStrings(Collection)
      */
     public DetektOperation input(String... paths) {
-        return inputStrings(List.of(paths));
+        if (ObjectTools.isNotEmpty(paths)) {
+            return inputStrings(List.of(paths));
+        }
+        return this;
     }
 
     /**
@@ -752,7 +802,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #input(Collection)
      */
     public DetektOperation input(File... paths) {
-        return input(List.of(paths));
+        if (ObjectTools.isNotEmpty(paths)) {
+            return input(List.of(paths));
+        }
+        return this;
     }
 
     /**
@@ -763,7 +816,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #inputPaths(Collection)
      */
     public DetektOperation input(Path... paths) {
-        return inputPaths(List.of(paths));
+        if (ObjectTools.isNotEmpty(paths)) {
+            return inputPaths(List.of(paths));
+        }
+        return this;
     }
 
     /**
@@ -784,7 +840,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #input(Path...)
      */
     public DetektOperation inputPaths(Collection<Path> paths) {
-        return input(paths.stream().map(Path::toFile).toList());
+        if (ObjectTools.isNotEmpty(paths)) {
+            return input(paths.stream().map(Path::toFile).toList());
+        }
+        return this;
     }
 
     /**
@@ -795,7 +854,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #input(String...)
      */
     public DetektOperation inputStrings(Collection<String> paths) {
-        return input(paths.stream().map(File::new).toList());
+        if (ObjectTools.isNotEmpty(paths)) {
+            return input(paths.stream().map(File::new).toList());
+        }
+        return this;
     }
 
     /**
@@ -871,7 +933,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #pluginsStrings(Collection)
      */
     public DetektOperation plugins(String... jars) {
-        return pluginsStrings(List.of(jars));
+        if (ObjectTools.isNotEmpty(jars)) {
+            return pluginsStrings(List.of(jars));
+        }
+        return this;
     }
 
     /**
@@ -882,7 +947,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #plugins(Collection)
      */
     public DetektOperation plugins(File... jars) {
-        return plugins(List.of(jars));
+        if (ObjectTools.isNotEmpty(jars)) {
+            return plugins(List.of(jars));
+        }
+        return this;
     }
 
     /**
@@ -893,7 +961,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #pluginsPaths(Collection)
      */
     public DetektOperation plugins(Path... jars) {
-        return pluginsPaths(List.of(jars));
+        if (ObjectTools.isNotEmpty(jars)) {
+            return pluginsPaths(List.of(jars));
+        }
+        return this;
     }
 
     /**
@@ -904,7 +975,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #input(File...)
      */
     public DetektOperation plugins(Collection<File> jars) {
-        plugins_.addAll(jars);
+        if (ObjectTools.isNotEmpty(jars)) {
+            plugins_.addAll(jars);
+        }
         return this;
     }
 
@@ -926,7 +999,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #plugins(Path...)
      */
     public DetektOperation pluginsPaths(Collection<Path> jars) {
-        return plugins(jars.stream().map(Path::toFile).toList());
+        if (ObjectTools.isNotEmpty(jars)) {
+            return plugins(jars.stream().map(Path::toFile).toList());
+        }
+        return this;
     }
 
     /**
@@ -937,7 +1013,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #plugins(String...)
      */
     public DetektOperation pluginsStrings(Collection<String> jars) {
-        return plugins(jars.stream().map(File::new).toList());
+        if (ObjectTools.isNotEmpty(jars)) {
+            return plugins(jars.stream().map(File::new).toList());
+        }
+        return this;
     }
 
     /**
@@ -947,7 +1026,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      */
     public DetektOperation report(Report... reports) {
-        report_.addAll(List.of(reports));
+        if (ObjectTools.isNotEmpty(reports)) {
+            report_.addAll(List.of(reports));
+        }
         return this;
     }
 
