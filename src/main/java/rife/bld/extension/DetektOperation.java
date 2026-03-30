@@ -42,6 +42,7 @@ import java.util.logging.Logger;
  */
 public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
+    // Detekt jars without version numbers
     private static final List<String> DETEKT_JARS = List.of(
             "annotations-",
             "contester-breakpoint-",
@@ -75,6 +76,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     private String configResource_;
     private boolean createBaseline_;
     private boolean debug_;
+    private String detektClassPathJars_;
     private boolean disableDefaultRuleSets_;
     private boolean generateConfig_;
     private String jdkHome_;
@@ -100,6 +102,12 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             }
             throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
         } else {
+            if (TextTools.isBlank(detektClassPathJars_)) {
+                if (LOGGER.isLoggable(Level.SEVERE) && !silent()) {
+                    LOGGER.severe("No Detekt JARs found in: " + project_.libBldDirectory());
+                }
+                throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
+            }
             super.execute();
             if (successful_ && LOGGER.isLoggable(Level.INFO) && !silent()) {
                 if (createBaseline_) {
@@ -118,11 +126,11 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     @Override
     protected List<String> executeConstructProcessCommandList() {
-        final List<String> args = new ArrayList<>(50);
+        final List<String> args = new ArrayList<>(50); // ~2 args per option, ~25 options
         if (project_ != null) {
             args.add(javaTool());
             args.add("-cp");
-            args.add(getDetektJarList(project_.libBldDirectory()));
+            args.add(detektClassPathJars_);
             args.add("io.gitlab.arturbosch.detekt.cli.Main");
 
             // all-rules
@@ -264,8 +272,11 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * <p>
      * Sets the following:
      * <ul>
-     *     <li>{@link #baseline baseline} to {@code detekt-baseline.xml}, if it exists</li>
-     *     <li>{@link #excludes excludes} to exclude {@code build} and {@code resources} directories</li>
+     *     <li>The {@link #baseline baseline} to {@code detekt-baseline.xml}, if it exists in the
+     *     project's work directory</li>
+     *     <li>The {@link #excludes excludes} to exclude {@code build} and {@code resources} directories</li>
+     *     <li>The Detekt classpath from JARS in the {@link BaseProject#libBldDirectory() project's bld lib
+     *     directory}</li>
      * </ul>
      *
      * @param project the project to configure the operation from
@@ -280,6 +291,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             baseline_ = baseline.getAbsolutePath();
         }
         excludes(".*/build/.*", ".*/resources/.*");
+        detektClassPathJars_ = getDetektJarList(project_.libBldDirectory());
         return this;
     }
 
