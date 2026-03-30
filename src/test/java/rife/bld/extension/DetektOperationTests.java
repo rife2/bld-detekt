@@ -552,7 +552,7 @@ class DetektOperationTests {
 
             assertThat(commandList).contains("--input", input1.getAbsolutePath() + "," + input2.getAbsolutePath());
             assertThat(commandList).contains("--plugins", plugin1.getAbsolutePath() + "," + plugin2.getAbsolutePath());
-            assertThat(commandList).contains("-config", config1.getAbsolutePath() + ";" + config2.getAbsolutePath());
+            assertThat(commandList).contains("--config", config1.getAbsolutePath() + ";" + config2.getAbsolutePath());
             assertThat(commandList).contains("--classpath", cp1.getAbsolutePath() + File.pathSeparator + cp2.getAbsolutePath());
             assertThat(commandList).contains("--includes", ".*Include.*,.*Keep.*");
             assertThat(commandList).contains("--excludes", ".*/build/.*,.*/resources/.*,.*Exclude.*");

@@ -160,7 +160,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
             // config
             if (!config_.isEmpty()) {
-                args.add("-config");
+                args.add("--config");
                 args.add(String.join(";", config_.stream().map(File::getAbsolutePath).toList()));
             }
 
