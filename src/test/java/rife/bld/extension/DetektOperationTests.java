@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -47,7 +48,8 @@ import static org.assertj.core.api.Assertions.*;
 class DetektOperationTests {
 
     @RegisterExtension
-    private static final LoggingExtension LOGGING_EXTENSION = new LoggingExtension(DetektOperation.class.getName());
+    @SuppressWarnings("unused")
+    private static final LoggingExtension loggingExtension = new LoggingExtension(DetektOperation.class.getName());
 
     @Test
     void allOverloadedMethods() {
@@ -85,7 +87,96 @@ class DetektOperationTests {
     @Test
     void executeNoProject() {
         var op = new DetektOperation();
-        assertThatCode(op::execute).isInstanceOf(ExitStatusException.class);
+        assertThatCode(op::execute).isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("project must not be null");
+    }
+
+    @Nested
+    @DisplayName("ArgFile Tests")
+    class ArgFileTests {
+
+        @TempDir
+        Path tempDir;
+
+        @Test
+        @DisplayName("Does not use @argfile when command line is short")
+        void argFileNotUsedWhenCommandLineShort() throws IOException {
+            var libBld = tempDir.resolve("lib/bld");
+            Files.createDirectories(libBld);
+            Files.writeString(libBld.resolve("detekt-cli-1.23.8-all.jar"), "dummy");
+
+            var project = new BaseProjectBlueprint(
+                    tempDir.toFile(), "com.test", "test", "Test");
+
+            var op = new DetektOperation()
+                    .fromProject(project)
+                    .input(new File("src/main.kt"))
+                    .config("detekt.yml");
+
+            var cmd = op.executeConstructProcessCommandList();
+
+            assertThat(cmd.size()).isGreaterThan(2); // normal expanded command
+            assertThat(cmd).noneMatch(s -> s.startsWith("@"));
+            assertThat(cmd).contains("--input", new File("src/main.kt").getAbsolutePath());
+        }
+
+        @Test
+        @DisplayName("Uses @argfile when command line exceeds 30000 chars")
+        void argFileUsedWhenCommandLineTooLong() throws IOException {
+            // Create a fake lib/bld dir with one Detekt jar
+            var libBld = tempDir.resolve("lib/bld");
+            Files.createDirectories(libBld);
+            var detektJar = libBld.resolve("detekt-cli-1.23.8-all.jar");
+            Files.writeString(detektJar, "dummy");
+
+            // BaseProjectBlueprint works because BaseProject implements it
+            var project = new BaseProjectBlueprint(
+                    tempDir.toFile(), "com.test", "test", "Test");
+            // libBldDirectory() will return tempDir/lib/bld by default
+
+            var op = new DetektOperation().fromProject(project);
+
+            // Force a huge --input list to blow past 30k chars
+            var longInputs = new ArrayList<File>();
+            var basePath = tempDir.resolve("src");
+            Files.createDirectories(basePath);
+            // ~400 files * ~80 chars each = ~32k just for --input
+            for (int i = 0; i < 400; i++) {
+                var f = basePath.resolve(
+                        "VeryLongPackageNameToEnsureWeExceedTheCommandLineLimitFile" + i + ".kt");
+                Files.createFile(f);
+                longInputs.add(f.toFile());
+            }
+            op.input(longInputs);
+
+            var cmd = op.executeConstructProcessCommandList();
+
+            assertThat(cmd).hasSize(2);
+            assertThat(cmd.get(0)).matches(".*java(\\.exe)?$");
+            assertThat(cmd.get(1)).startsWith("@");
+
+            // Verify the argfile exists and contains expected content
+            var argfilePath = Path.of(cmd.get(1).substring(1));
+            assertThat(argfilePath).exists();
+            var content = Files.readString(argfilePath);
+            assertThat(content)
+                    .contains("-cp")
+                    .contains("detekt-cli-1.23.8-all.jar")
+                    .contains("io.gitlab.arturbosch.detekt.cli.Main")
+                    .contains("--input")
+                    .contains("VeryLongPackageNameToEnsureWeExceedTheCommandLineLimitFile399.kt");
+
+            // Verify quoting: create a path with spaces to ensure it's wrapped in quotes
+            var spaced = basePath.resolve("path with spaces").resolve("File With Spaces.kt");
+            Files.createDirectories(spaced.getParent());
+            Files.createFile(spaced);
+            op.input(spaced);
+
+            var cmd2 = op.executeConstructProcessCommandList();
+            var argFile2 = Path.of(cmd2.get(1).substring(1));
+            var content2 = Files.readString(argFile2);
+            assertThat(content2).contains("\"" + spaced.toAbsolutePath() + "\"");
+        }
     }
 
     @Nested
@@ -550,8 +641,10 @@ class DetektOperationTests {
 
             var commandList = op.executeConstructProcessCommandList();
 
-            assertThat(commandList).contains("--input", input1.getAbsolutePath() + "," + input2.getAbsolutePath());
-            assertThat(commandList).contains("--plugins", plugin1.getAbsolutePath() + "," + plugin2.getAbsolutePath());
+            assertThat(commandList).contains("--input", input1.getAbsolutePath());
+            assertThat(commandList).contains("--input", input2.getAbsolutePath());
+            assertThat(commandList).contains("--plugins", plugin1.getAbsolutePath());
+            assertThat(commandList).contains("--plugins", plugin2.getAbsolutePath());
             assertThat(commandList).contains("--config", config1.getAbsolutePath() + ";" + config2.getAbsolutePath());
             assertThat(commandList).contains("--classpath", cp1.getAbsolutePath() + File.pathSeparator + cp2.getAbsolutePath());
             assertThat(commandList).contains("--includes", ".*Include.*,.*Keep.*");
