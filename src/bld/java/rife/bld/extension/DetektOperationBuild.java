@@ -53,10 +53,10 @@ public class DetektOperationBuild extends Project {
                         version(1, 23, 8)));
         scope(provided)
                 .include(dependency("com.github.spotbugs", "spotbugs-annotations",
-                        version(4, 9, 8)));
+                        version(4, 10, 2)));
         scope(test)
                 .include(dependency("com.uwyn.rife2", "bld-extensions-testing-helpers",
-                        version(1, 0, 1)))
+                        version(1, 1, 0, "SNAPSHOT")))
                 .include(dependency("org.junit.jupiter", "junit-jupiter", junit))
                 .include(dependency("org.junit.platform", "junit-platform-console-standalone", junit))
                 .include(dependency("org.assertj", "assertj-core",
@@ -66,7 +66,8 @@ public class DetektOperationBuild extends Project {
                 .author()
                 .docLint(NO_MISSING)
                 .link("https://rife2.github.io/bld/")
-                .link("https://rife2.github.io/rife2/");
+                .link("https://rife2.github.io/rife2/")
+                .link("https://findbugs.sourceforge.net/api/");
 
         publishOperation()
                 .repository(version.isSnapshot() ? repository("rife2-snapshot") : repository("rife2"))

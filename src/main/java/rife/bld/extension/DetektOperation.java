@@ -115,6 +115,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             }
             throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
         }
+        if (logger.isLoggable(Level.INFO) && !silent()) {
+            if (createBaseline_) {
+                logger.info("Generating detekt baseline...");
+            } else {
+                logger.info("Running detekt analysis...");
+            }
+        }
         super.execute();
         if (successful_ && logger.isLoggable(Level.INFO) && !silent()) {
             if (createBaseline_) {
@@ -508,8 +515,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths one or more files
      * @return this operation instance
-     * @throws NullPointerException     if {@code paths} is {@code null}
-     * @throws IllegalArgumentException if {@code paths} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code paths} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code paths} is empty
      * @see #classPath(Path...)
      * @see #classPath(String...)
      * @see #classPath(Collection)
@@ -529,8 +536,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths one or more files
      * @return this operation instance
-     * @throws NullPointerException     if {@code paths} is {@code null}
-     * @throws IllegalArgumentException if {@code paths} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code paths} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code paths} is empty
      * @see #classPath(File...)
      * @see #classPath(String...)
      * @see #classPath(Collection)
@@ -550,8 +557,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths one or more files
      * @return this operation instance
-     * @throws NullPointerException     if {@code paths} is {@code null}
-     * @throws IllegalArgumentException if {@code paths} is empty, or contains {@code null} or empty elements
+     * @throws NullPointerException     if {@code paths} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code paths} is empty or contains empty elements
      * @see #classPath(File...)
      * @see #classPath(Path...)
      * @see #classPath(Collection)
@@ -571,8 +578,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths the paths
      * @return this operation instance
-     * @throws NullPointerException     if {@code paths} is {@code null}
-     * @throws IllegalArgumentException if {@code paths} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code paths} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code paths} is empty
      * @see #classPath(File...)
      * @see #classPath(Path...)
      * @see #classPath(String...)
@@ -601,8 +608,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths the paths
      * @return this operation instance
-     * @throws NullPointerException     if {@code paths} is {@code null}
-     * @throws IllegalArgumentException if {@code paths} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code paths} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code paths} is empty
      * @see #classPath(File...)
      * @see #classPath(Path...)
      * @see #classPath(String...)
@@ -622,8 +629,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths the paths
      * @return this operation instance
-     * @throws NullPointerException     if {@code paths} is {@code null}
-     * @throws IllegalArgumentException if {@code paths} is empty, or contains {@code null} or empty elements
+     * @throws NullPointerException     if {@code paths} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code paths} is empty or contains empty elements
      * @see #classPath(File...)
      * @see #classPath(Path...)
      * @see #classPath(String...)
@@ -642,8 +649,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param configs one or more config files
      * @return this operation instance
-     * @throws NullPointerException     if {@code configs} is {@code null}
-     * @throws IllegalArgumentException if {@code configs} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code configs} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code configs} is empty
      * @see #config(Path...)
      * @see #config(String...)
      * @see #config(Collection)
@@ -662,8 +669,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param configs one or more config files
      * @return this operation instance
-     * @throws NullPointerException     if {@code configs} is {@code null}
-     * @throws IllegalArgumentException if {@code configs} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code configs} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code configs} is empty
      * @see #config(File...)
      * @see #config(String...)
      * @see #config(Collection)
@@ -682,8 +689,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param configs one or more config files
      * @return this operation instance
-     * @throws NullPointerException     if {@code configs} is {@code null}
-     * @throws IllegalArgumentException if {@code configs} is empty, or contains {@code null} or empty elements
+     * @throws NullPointerException     if {@code configs} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code configs} is empty or contains empty elements
      * @see #config(File...)
      * @see #config(Path...)
      * @see #config(Collection)
@@ -702,8 +709,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param configs the config files
      * @return this operation instance
-     * @throws NullPointerException     if {@code configs} is {@code null}
-     * @throws IllegalArgumentException if {@code configs} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code configs} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code configs} is empty
      * @see #config(File...)
      * @see #config(Path...)
      * @see #config(String...)
@@ -731,8 +738,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param configs the config files
      * @return this operation instance
-     * @throws NullPointerException     if {@code configs} is {@code null}
-     * @throws IllegalArgumentException if {@code configs} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code configs} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code configs} is empty
      * @see #config(File...)
      * @see #config(Path...)
      * @see #config(String...)
@@ -809,8 +816,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param configs the config files
      * @return this operation instance
-     * @throws NullPointerException     if {@code configs} is {@code null}
-     * @throws IllegalArgumentException if {@code configs} is empty, or contains {@code null} or empty elements
+     * @throws NullPointerException     if {@code configs} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code configs} is empty or contains empty elements
      * @see #config(File...)
      * @see #config(Path...)
      * @see #config(String...)
@@ -863,8 +870,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param patterns one or more pattern
      * @return this operation instance
-     * @throws NullPointerException     if {@code patterns} is {@code null}
-     * @throws IllegalArgumentException if {@code patterns} is empty, or contains {@code null} or empty elements
+     * @throws NullPointerException     if {@code patterns} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code patterns} is empty or contains empty elements
      * @see #excludes(Collection)
      * @see #excludes()
      */
@@ -879,8 +886,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param patterns a collection of patterns
      * @return this operation instance
-     * @throws NullPointerException     if {@code patterns} is {@code null}
-     * @throws IllegalArgumentException if {@code patterns} is empty, or contains {@code null} or empty elements
+     * @throws NullPointerException     if {@code patterns} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code patterns} is empty or contains empty elements
      * @see #excludes(String...)
      * @see #excludes()
      */
@@ -918,8 +925,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param patterns one or more patterns
      * @return this operation instance
-     * @throws NullPointerException     if {@code patterns} is {@code null}
-     * @throws IllegalArgumentException if {@code patterns} is empty, or contains {@code null} or empty elements
+     * @throws NullPointerException     if {@code patterns} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code patterns} is empty or contains empty elements
      * @see #includes(Collection)
      * @see #includes()
      */
@@ -935,8 +942,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param patterns a collection of patterns
      * @return this operation instance
-     * @throws NullPointerException     if {@code patterns} is {@code null}
-     * @throws IllegalArgumentException if {@code patterns} is empty, or contains {@code null} or empty elements
+     * @throws NullPointerException     if {@code patterns} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code patterns} is empty or contains empty elements
      * @see #includes(String...)
      * @see #includes()
      */
@@ -960,8 +967,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths the paths
      * @return this operation instance
-     * @throws NullPointerException     if {@code paths} is {@code null}
-     * @throws IllegalArgumentException if {@code paths} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code paths} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code paths} is empty
      * @see #input(File...)
      * @see #input(Path...)
      * @see #input(String...)
@@ -980,8 +987,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths one or more paths
      * @return this operation instance
-     * @throws NullPointerException     if {@code paths} is {@code null}
-     * @throws IllegalArgumentException if {@code paths} is empty, or contains {@code null} or empty elements
+     * @throws NullPointerException     if {@code paths} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code paths} is empty or contains empty elements
      * @see #input(File...)
      * @see #input(Path...)
      * @see #input(Collection)
@@ -1000,8 +1007,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths one or more paths
      * @return this operation instance
-     * @throws NullPointerException     if {@code paths} is {@code null}
-     * @throws IllegalArgumentException if {@code paths} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code paths} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code paths} is empty
      * @see #input(Path...)
      * @see #input(String...)
      * @see #input(Collection)
@@ -1020,8 +1027,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths one or more paths
      * @return this operation instance
-     * @throws NullPointerException     if {@code paths} is {@code null}
-     * @throws IllegalArgumentException if {@code paths} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code paths} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code paths} is empty
      * @see #input(File...)
      * @see #input(String...)
      * @see #input(Collection)
@@ -1049,8 +1056,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths the paths
      * @return this operation instance
-     * @throws NullPointerException     if {@code paths} is {@code null}
-     * @throws IllegalArgumentException if {@code paths} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code paths} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code paths} is empty
      * @see #input(File...)
      * @see #input(Path...)
      * @see #input(String...)
@@ -1069,8 +1076,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param paths the paths
      * @return this operation instance
-     * @throws NullPointerException     if {@code paths} is {@code null}
-     * @throws IllegalArgumentException if {@code paths} is empty, or contains {@code null} or empty elements
+     * @throws NullPointerException     if {@code paths} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code paths} is empty or contains empty elements
      * @see #input(File...)
      * @see #input(Path...)
      * @see #input(String...)
@@ -1090,9 +1097,11 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param path the JDK home directory path
      * @return this operation instance
+     * @throws NullPointerException     if {@code path} is {@code null}
+     * @throws IllegalArgumentException if {@code path} is blank
      */
-    public DetektOperation jdkHome(String path) {
-        jdkHome_ = path;
+    public DetektOperation jdkHome(@NonNull String path) {
+        jdkHome_ = TextTools.requireNotBlank(path, "jdkHome");
         return this;
     }
 
@@ -1104,9 +1113,11 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param target the target version
      * @return this operation instance
+     * @throws NullPointerException     if {@code target} is {@code null}
+     * @throws IllegalArgumentException if {@code target} is blank
      */
-    public DetektOperation jvmTarget(String target) {
-        jvmTarget_ = target;
+    public DetektOperation jvmTarget(@NonNull String target) {
+        jvmTarget_ = TextTools.requireNotBlank(target, "jvmTarget");
         return this;
     }
 
@@ -1118,9 +1129,11 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param version the version
      * @return this operation instance
+     * @throws NullPointerException     if {@code version} is {@code null}
+     * @throws IllegalArgumentException if {@code version} is blank
      */
-    public DetektOperation languageVersion(String version) {
-        languageVersion_ = version;
+    public DetektOperation languageVersion(@NonNull String version) {
+        languageVersion_ = TextTools.requireNotBlank(version, "languageVersion");
         return this;
     }
 
@@ -1154,8 +1167,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param jars one or more jars
      * @return this operation instance
-     * @throws NullPointerException     if {@code jars} is {@code null}
-     * @throws IllegalArgumentException if {@code jars} is empty, or contains {@code null} or empty elements
+     * @throws NullPointerException     if {@code jars} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code jars} is empty or contains empty elements
      * @see #plugins(File...)
      * @see #plugins(Path...)
      * @see #plugins(Collection)
@@ -1174,8 +1187,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param jars one or more jars
      * @return this operation instance
-     * @throws NullPointerException     if {@code jars} is {@code null}
-     * @throws IllegalArgumentException if {@code jars} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code jars} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code jars} is empty
      * @see #plugins(Path...)
      * @see #plugins(String...)
      * @see #plugins(Collection)
@@ -1194,8 +1207,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param jars one or more jars
      * @return this operation instance
-     * @throws NullPointerException     if {@code jars} is {@code null}
-     * @throws IllegalArgumentException if {@code jars} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code jars} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code jars} is empty
      * @see #plugins(File...)
      * @see #plugins(String...)
      * @see #plugins(Collection)
@@ -1214,8 +1227,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param jars the jars paths
      * @return this operation instance
-     * @throws NullPointerException     if {@code jars} is {@code null}
-     * @throws IllegalArgumentException if {@code jars} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code jars} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code jars} is empty
      * @see #plugins(File...)
      * @see #plugins(Path...)
      * @see #plugins(String...)
@@ -1243,8 +1256,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param jars the jars paths
      * @return this operation instance
-     * @throws NullPointerException     if {@code jars} is {@code null}
-     * @throws IllegalArgumentException if {@code jars} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code jars} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code jars} is empty
      * @see #plugins(File...)
      * @see #plugins(Path...)
      * @see #plugins(String...)
@@ -1263,8 +1276,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param jars the jars paths
      * @return this operation instance
-     * @throws NullPointerException     if {@code jars} is {@code null}
-     * @throws IllegalArgumentException if {@code jars} is empty, or contains {@code null} or empty elements
+     * @throws NullPointerException     if {@code jars} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code jars} is empty or contains empty elements
      * @see #plugins(File...)
      * @see #plugins(Path...)
      * @see #plugins(String...)
@@ -1283,8 +1296,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param reports one or more reports
      * @return this operation instance
-     * @throws NullPointerException     if {@code reports} is {@code null}
-     * @throws IllegalArgumentException if {@code reports} is empty, or contains {@code null} elements
+     * @throws NullPointerException     if {@code reports} is {@code null} or contains {@code null} elements
+     * @throws IllegalArgumentException if {@code reports} is empty
      */
     public DetektOperation report(@NonNull Report... reports) {
         ObjectTools.requireNotEmpty(reports, "report");

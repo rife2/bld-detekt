@@ -23,5 +23,5 @@ The `detekt-baseline.xml` file will be created in the project's root directory.
 
 ## Explore
 
-- [View Build File](https://github.com/rife2/bld-detekt/blob/master/examples/src/bld/java/com/example/ExampleBuild.java)
-- [View Wrapper Properties](https://github.com/rife2/bld-detekt/blob/master/examples/lib/bld/bld-wrapper.properties)
+- [View Build File](https://github.com/rife2/bld-detekt/blob/main/examples/src/bld/java/com/example/ExampleBuild.java)
+- [View Wrapper Properties](https://github.com/rife2/bld-detekt/blob/main/examples/lib/bld/bld-wrapper.properties)

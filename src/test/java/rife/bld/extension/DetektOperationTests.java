@@ -25,6 +25,9 @@ import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
 import rife.bld.BaseProject;
 import rife.bld.Project;
 import rife.bld.blueprints.BaseProjectBlueprint;
@@ -39,6 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -698,6 +702,256 @@ class DetektOperationTests {
                     .maxIssues(0);
             var commandList = op.executeConstructProcessCommandList();
             assertThat(commandList).doesNotContain("--max-issues");
+        }
+    }
+
+    @Nested
+    @DisplayName("Validation Tests")
+    @SuppressWarnings("DataFlowIssue")
+    class ValidationTests {
+
+        @ParameterizedTest
+        @EmptySource
+        void basePathWithEmpty(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().basePath(arg))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        void basePathWithNull() {
+            assertThatThrownBy(() -> new DetektOperation().basePath((String) null))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().basePath((File) null))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().basePath((Path) null))
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @ParameterizedTest
+        @EmptySource
+        void baselineWithEmpty(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().baseline(arg))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        void baselineWithNull() {
+            assertThatThrownBy(() -> new DetektOperation().baseline((String) null))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().baseline((File) null))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().baseline((Path) null))
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @ParameterizedTest
+        @EmptySource
+        void classPathWithEmpty(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().classPath(arg))
+                    .as("varargs with empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().classPath("foo", arg))
+                    .as("array has empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().classPath(List.of()))
+                    .as("list is empty").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().classPathPaths(List.of()))
+                    .as("paths list is empty").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().classPathStrings(List.of()))
+                    .as("strings list is empty").isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @ParameterizedTest
+        @NullSource
+        void classPathWithNull(File arg) {
+            assertThatThrownBy(() -> new DetektOperation().classPath(arg))
+                    .as("varargs with null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().classPath(new File("foo"), arg))
+                    .as("array has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().classPath(List.of(new File("foo"), arg)))
+                    .as("list has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().classPath((File[]) null))
+                    .as("array is null").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().classPath((Collection<File>) null))
+                    .as("collection is null").isInstanceOf(NullPointerException.class);
+        }
+
+        @ParameterizedTest
+        @EmptySource
+        void configResourceWithEmpty(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().configResource(arg))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        void configResourceWithNull() {
+            assertThatThrownBy(() -> new DetektOperation().configResource((String) null))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().configResource((File) null))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().configResource((Path) null))
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @ParameterizedTest
+        @EmptySource
+        void configWithEmpty(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().config(arg))
+                    .as("varargs with empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().config("foo", arg))
+                    .as("array has empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().config(List.of()))
+                    .as("list is empty").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().configPaths(List.of()))
+                    .as("paths list is empty").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().configStrings(List.of()))
+                    .as("strings list is empty").isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @ParameterizedTest
+        @NullSource
+        void configWithNull(File arg) {
+            assertThatThrownBy(() -> new DetektOperation().config(arg))
+                    .as("varargs with null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().config(new File("foo"), arg))
+                    .as("array has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().config(List.of(new File("foo"), arg)))
+                    .as("list has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().config((File[]) null))
+                    .as("array is null").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().config((Collection<File>) null))
+                    .as("collection is null").isInstanceOf(NullPointerException.class);
+        }
+
+        @ParameterizedTest
+        @EmptySource
+        void excludesWithEmpty(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().excludes(arg))
+                    .as("varargs with empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().excludes("foo", arg))
+                    .as("array has empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().excludes(List.of("foo", arg)))
+                    .as("list has empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().excludes(List.of()))
+                    .as("list is empty").isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @ParameterizedTest
+        @NullSource
+        void excludesWithNull(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().excludes(arg))
+                    .as("varargs with null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().excludes("foo", arg))
+                    .as("array has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().excludes(List.of("foo", arg)))
+                    .as("list has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().excludes((String[]) null))
+                    .as("array is null").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().excludes((Collection<String>) null))
+                    .as("collection is null").isInstanceOf(NullPointerException.class);
+        }
+
+        @Test
+        void fromProjectWithNull() {
+            assertThatThrownBy(() -> new DetektOperation().fromProject(null))
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @ParameterizedTest
+        @EmptySource
+        void includesWithEmpty(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().includes(arg))
+                    .as("varargs with empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().includes("foo", arg))
+                    .as("array has empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().includes(List.of("foo", arg)))
+                    .as("list has empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().includes(List.of()))
+                    .as("list is empty").isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @ParameterizedTest
+        @NullSource
+        void includesWithNull(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().includes(arg))
+                    .as("varargs with null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().includes("foo", arg))
+                    .as("array has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().includes(List.of("foo", arg)))
+                    .as("list has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().includes((String[]) null))
+                    .as("array is null").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().includes((Collection<String>) null))
+                    .as("collection is null").isInstanceOf(NullPointerException.class);
+        }
+
+        @ParameterizedTest
+        @EmptySource
+        void inputWithEmpty(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().input(arg))
+                    .as("varargs with empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().input("foo", arg))
+                    .as("array has empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().input(List.of()))
+                    .as("list is empty").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().inputPaths(List.of()))
+                    .as("paths list is empty").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().inputStrings(List.of()))
+                    .as("strings list is empty").isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @ParameterizedTest
+        @NullSource
+        void inputWithNull(File arg) {
+            assertThatThrownBy(() -> new DetektOperation().input(arg))
+                    .as("varargs with null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().input(new File("foo"), arg))
+                    .as("array has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().input(List.of(new File("foo"), arg)))
+                    .as("list has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().input((File[]) null))
+                    .as("array is null").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().input((Collection<File>) null))
+                    .as("collection is null").isInstanceOf(NullPointerException.class);
+        }
+
+        @ParameterizedTest
+        @EmptySource
+        void pluginsWithEmpty(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().plugins(arg))
+                    .as("varargs with empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().plugins("foo", arg))
+                    .as("array has empty element").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().plugins(List.of()))
+                    .as("list is empty").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().pluginsPaths(List.of()))
+                    .as("paths list is empty").isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> new DetektOperation().pluginsStrings(List.of()))
+                    .as("strings list is empty").isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @ParameterizedTest
+        @NullSource
+        void pluginsWithNull(File arg) {
+            assertThatThrownBy(() -> new DetektOperation().plugins(arg))
+                    .as("varargs with null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().plugins(new File("foo"), arg))
+                    .as("array has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().plugins(List.of(new File("foo"), arg)))
+                    .as("list has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().plugins((File[]) null))
+                    .as("array is null").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().plugins((Collection<File>) null))
+                    .as("collection is null").isInstanceOf(NullPointerException.class);
+        }
+
+        @ParameterizedTest
+        @NullSource
+        void reportWithNull(Report arg) {
+            assertThatThrownBy(() -> new DetektOperation().report(arg))
+                    .as("varargs with null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().report(new Report(ReportId.TXT, "out.txt"), arg))
+                    .as("array has null element").isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().report((Report[]) null))
+                    .as("array is null").isInstanceOf(NullPointerException.class);
         }
     }
 }
