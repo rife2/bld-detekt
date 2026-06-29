@@ -34,22 +34,26 @@ public void detekt() throws ExitStatusException, IOException, InterruptedExcepti
 
 - [View Examples Project](https://github.com/rife2/bld-detekt/tree/main/examples)
 
-To generate a Detekt baseline, add the following to your build file:
+## Detekt Baseline
+
+To use a Detekt baseline, add the following to your build file:
 
 ```java
-@BuildCommand(value = "detekt-baseline", summary = "Creates the Detekt baseline")
-public void detektBaseline() throws ExitStatusException, IOException, InterruptedException {
+@BuildCommand(value = "detekt", summary = "Checks source with Detekt")
+public void detekt() throws ExitStatusException, IOException, InterruptedException {
     new DetektOperation()
         .fromProject(this)
         .baseline("detekt-baseline.xml")
-        .createBaseline(true)
         .execute();
 }
 ```
 
+To generate the baseline, use:
+
 ```console
-./bld compile detekt-baseline
+./bld compile detekt --create-baseline
 ```
+
 - [View Examples Project](https://github.com/rife2/bld-detekt/tree/main/examples)
 
 Please check the [DetektOperation documentation](https://rife2.github.io/bld-detekt/rife/bld/extension/DetektOperation.html#method-summary) for all available configuration options.

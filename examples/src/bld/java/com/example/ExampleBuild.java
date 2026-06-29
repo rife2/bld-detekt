@@ -78,6 +78,7 @@ public class ExampleBuild extends Project {
     @BuildCommand(value = "detekt-baseline", summary = "Creates the Detekt baseline")
     public void detektBaseline() throws ExitStatusException, IOException, InterruptedException {
         // The detekt-baseline.xml file will be created in the project's root
+        // or simply use: ./bld compile detekt --create-baseline
         new DetektOperation()
                 .fromProject(this)
                 .baseline("detekt-baseline.xml")

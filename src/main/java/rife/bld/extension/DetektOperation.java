@@ -49,6 +49,8 @@ import java.util.logging.Logger;
 )
 public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
+    private static final String ARG_CREATE_BASELINE = "--create-baseline";
+    private static final String BASELINE = "baseline";
     private static final String CLASS_PATH = "classPath";
     private static final String CONFIG = "config";
     // Detekt jars without version numbers
@@ -106,7 +108,6 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @throws NullPointerException if {@code project} is {@code null}
      */
     @Override
-    @SuppressFBWarnings("PATH_TRAVERSAL_IN")
     public void execute() throws IOException, InterruptedException, ExitStatusException {
         ObjectTools.requireNonNull(project_, "project");
         if (TextTools.isBlank(detektClassPathJars_)) {
@@ -115,8 +116,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             }
             throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
         }
+
         if (logger.isLoggable(Level.INFO) && !silent()) {
             if (createBaseline_) {
+                ObjectTools.requireNonNull(baseline_, BASELINE);
                 logger.info("Generating detekt baseline...");
             } else {
                 logger.info("Running detekt analysis...");
@@ -302,7 +305,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
                 } catch (IOException e) {
                     if (logger.isLoggable(Level.WARNING) && !silent()) {
                         logger.log(Level.WARNING,
-                                "Failed to create @argfile, falling back to long command: " + e.getMessage(),
+                                "Failed to create @argfile, falling back to long command: " + e.getLocalizedMessage(),
                                 e);
                     }
                     // fall through and return full args
@@ -342,6 +345,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             excludes(".*/build/.*", ".*/resources/.*");
         }
         detektClassPathJars_ = getDetektJarList(project_.libBldDirectory());
+
+        parseArguments(project_.arguments());
+
         return this;
     }
 
@@ -448,7 +454,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #baseline()
      */
     public DetektOperation baseline(@NonNull String baseline) {
-        baseline_ = ObjectTools.requireNotEmpty(baseline, "baseline");
+        baseline_ = ObjectTools.requireNotEmpty(baseline, BASELINE);
         return this;
     }
 
@@ -464,7 +470,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #baseline()
      */
     public DetektOperation baseline(@NonNull File baseline) {
-        ObjectTools.requireNonNull(baseline, "baseline");
+        ObjectTools.requireNonNull(baseline, BASELINE);
         return baseline(baseline.getAbsolutePath());
     }
 
@@ -480,7 +486,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #baseline()
      */
     public DetektOperation baseline(@NonNull Path baseline) {
-        ObjectTools.requireNonNull(baseline, "baseline");
+        ObjectTools.requireNonNull(baseline, BASELINE);
         return baseline(baseline.toFile().getAbsolutePath());
     }
 
@@ -1325,5 +1331,17 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             }
         }
         return String.join(File.pathSeparator, jars);
+    }
+
+    private void parseArguments(List<String> args) {
+        if (args.isEmpty()) {
+            return;
+        }
+
+        var arg = args.get(0);
+        if (ARG_CREATE_BASELINE.equals(arg)) {
+            createBaseline_ = true;
+            args.remove(0);
+        }
     }
 }
