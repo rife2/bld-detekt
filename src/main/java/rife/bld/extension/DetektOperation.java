@@ -16,13 +16,16 @@
 
 package rife.bld.extension;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import rife.bld.BaseProject;
+import rife.bld.dependencies.Dependency;
 import rife.bld.extension.detekt.Report;
 import rife.bld.extension.detekt.ReportId;
 import rife.bld.extension.tools.CollectionTools;
 import rife.bld.extension.tools.ObjectTools;
+import rife.bld.extension.tools.PathTools;
 import rife.bld.extension.tools.TextTools;
 import rife.bld.operations.AbstractProcessOperation;
 import rife.bld.operations.exceptions.ExitStatusException;
@@ -34,6 +37,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,30 +51,13 @@ import java.util.logging.Logger;
         value = "EI_EXPOSE_REP",
         justification = "Builder pattern intentionally exposes mutable collections"
 )
+@NullMarked
 public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
     private static final String ARG_CREATE_BASELINE = "--create-baseline";
     private static final String BASELINE = "baseline";
     private static final String CLASS_PATH = "classPath";
     private static final String CONFIG = "config";
-    // Detekt jars without version numbers
-    private static final List<String> DETEKT_JARS = List.of(
-            "annotations-",
-            "contester-breakpoint-",
-            "detekt-",
-            "jcommander-",
-            "kotlin-compiler-embeddable-",
-            "kotlin-daemon-embeddable-",
-            "kotlin-reflect-",
-            "kotlin-script-runtime-",
-            "kotlin-stdlib-",
-            "kotlinx-coroutines-",
-            "kotlinx-html-jvm-",
-            "kotlinx-serialization-",
-            "poko-annotations-jvm-",
-            "sarif4k-jvm-",
-            "snakeyaml-engine-",
-            "trove4j-");
     private static final String INPUT = "input";
     private static final String PLUGINS = "plugins";
     private static final Logger logger = Logger.getLogger(DetektOperation.class.getName());
@@ -83,21 +70,21 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     private final List<Report> report_ = new ArrayList<>();
     private boolean allRules_;
     private boolean autoCorrect_;
-    private String basePath_;
-    private String baseline_;
+    private @Nullable String basePath_;
+    private @Nullable String baseline_;
     private boolean buildUponDefaultConfig_;
-    private String configResource_;
+    private @Nullable String configResource_;
     private boolean createBaseline_;
     private boolean debug_;
-    private String detektClassPathJars_;
+    private @Nullable String detektClassPathJars_;
     private boolean disableDefaultRuleSets_;
     private boolean generateConfig_;
-    private String jdkHome_;
-    private String jvmTarget_;
-    private String languageVersion_;
+    private @Nullable String jdkHome_;
+    private @Nullable String jvmTarget_;
+    private @Nullable String languageVersion_;
     private int maxIssues_;
     private boolean parallel_;
-    private BaseProject project_;
+    private @Nullable BaseProject project_;
 
     /**
      * Performs the operation.
@@ -117,19 +104,21 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
         }
 
-        if (logger.isLoggable(Level.INFO) && !silent()) {
-            if (createBaseline_) {
-                ObjectTools.requireNonNull(baseline_, BASELINE);
+        if (createBaseline_) {
+            ObjectTools.requireNonNull(baseline_, BASELINE);
+            if (logger.isLoggable(Level.INFO) && !silent()) {
                 logger.info("Generating detekt baseline...");
-            } else {
-                logger.info("Running detekt analysis...");
             }
+        } else if (logger.isLoggable(Level.INFO) && !silent()) {
+            logger.info("Running detekt analysis...");
         }
+
         super.execute();
+
         if (successful_ && logger.isLoggable(Level.INFO) && !silent()) {
             if (createBaseline_) {
                 logger.info("Detekt baseline generated successfully: "
-                        + "file://" + new File(baseline_).toURI().getPath());
+                        + "file://" + new File(Objects.requireNonNull(baseline_)).toURI().getPath());
             } else {
                 logger.info("Detekt operation finished successfully.");
             }
@@ -146,7 +135,12 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         if (project_ != null) {
             args.add(javaTool());
             args.add("-cp");
-            args.add(detektClassPathJars_);
+            args.add(PathTools.joinClasspath(
+                            project_.extensionClasspathJars(
+                                    new Dependency("io.gitlab.arturbosch.detekt", "detekt-cli")
+                            )
+                    )
+            );
             args.add("io.gitlab.arturbosch.detekt.cli.Main");
 
             // all-rules
@@ -335,16 +329,18 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
 
     @Override
-    public DetektOperation fromProject(@NonNull BaseProject project) {
+    public DetektOperation fromProject(BaseProject project) {
         project_ = ObjectTools.requireNonNull(project, "fromProject");
         var baseline = new File(project.workDirectory(), "detekt-baseline.xml");
         if (baseline.exists()) {
             baseline_ = baseline.getAbsolutePath();
+        } else {
+            baseline_ = null;
         }
         if (excludes_.isEmpty()) {
             excludes(".*/build/.*", ".*/resources/.*");
         }
-        detektClassPathJars_ = getDetektJarList(project_.libBldDirectory());
+        detektClassPathJars_ = PathTools.joinClasspath(project_.extensionClasspathJars("io.gitlab.arturbosch.detekt", "detekt-cli"));
 
         parseArguments(project_.arguments());
 
@@ -385,13 +381,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @param path the directory path
      * @return this operation instance
      * @throws NullPointerException     if {@code path} is {@code null}
-     * @throws IllegalArgumentException if {@code path} is empty
+     * @throws IllegalArgumentException if {@code path} is empty or blank
      * @see #basePath(File)
      * @see #basePath(Path)
      * @see #basePath()
      */
-    public DetektOperation basePath(@NonNull String path) {
-        basePath_ = ObjectTools.requireNotEmpty(path, "basePath");
+    public DetektOperation basePath(String path) {
+        basePath_ = TextTools.requireNotBlank(path, "basePath");
         return this;
     }
 
@@ -407,7 +403,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #basePath(Path)
      * @see #basePath()
      */
-    public DetektOperation basePath(@NonNull File path) {
+    public DetektOperation basePath(File path) {
         ObjectTools.requireNonNull(path, "basePath");
         return basePath(path.getAbsolutePath());
     }
@@ -420,6 +416,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #basePath(File)
      * @see #basePath(Path)
      */
+    @Nullable
     public String basePath() {
         return basePath_;
     }
@@ -436,7 +433,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #basePath(File)
      * @see #basePath()
      */
-    public DetektOperation basePath(@NonNull Path path) {
+    public DetektOperation basePath(Path path) {
         ObjectTools.requireNonNull(path, "basePath");
         return basePath(path.toFile().getAbsolutePath());
     }
@@ -448,13 +445,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @param baseline the baseline XML file
      * @return this operation instance
      * @throws NullPointerException     if {@code baseline} is {@code null}
-     * @throws IllegalArgumentException if {@code baseline} is empty
+     * @throws IllegalArgumentException if {@code baseline} is empty or blank
      * @see #baseline(File)
      * @see #baseline(Path)
      * @see #baseline()
      */
-    public DetektOperation baseline(@NonNull String baseline) {
-        baseline_ = ObjectTools.requireNotEmpty(baseline, BASELINE);
+    public DetektOperation baseline(String baseline) {
+        baseline_ = TextTools.requireNotBlank(baseline, BASELINE);
         return this;
     }
 
@@ -469,7 +466,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #baseline(Path)
      * @see #baseline()
      */
-    public DetektOperation baseline(@NonNull File baseline) {
+    public DetektOperation baseline(File baseline) {
         ObjectTools.requireNonNull(baseline, BASELINE);
         return baseline(baseline.getAbsolutePath());
     }
@@ -485,7 +482,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #baseline(File)
      * @see #baseline()
      */
-    public DetektOperation baseline(@NonNull Path baseline) {
+    public DetektOperation baseline(Path baseline) {
         ObjectTools.requireNonNull(baseline, BASELINE);
         return baseline(baseline.toFile().getAbsolutePath());
     }
@@ -498,6 +495,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #baseline(File)
      * @see #baseline(Path)
      */
+    @Nullable
     public String baseline() {
         return baseline_;
     }
@@ -530,7 +528,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #classPathStrings(Collection)
      * @see #classPath()
      */
-    public DetektOperation classPath(@NonNull File... paths) {
+    public DetektOperation classPath(File... paths) {
         ObjectTools.requireNotEmpty(paths, CLASS_PATH);
         classpath_.addAll(List.of(paths));
         return this;
@@ -551,7 +549,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #classPathStrings(Collection)
      * @see #classPath()
      */
-    public DetektOperation classPath(@NonNull Path... paths) {
+    public DetektOperation classPath(Path... paths) {
         ObjectTools.requireNotEmpty(paths, CLASS_PATH);
         classpath_.addAll(CollectionTools.combinePathsToFiles(paths));
         return this;
@@ -572,7 +570,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #classPathStrings(Collection)
      * @see #classPath()
      */
-    public DetektOperation classPath(@NonNull String... paths) {
+    public DetektOperation classPath(String... paths) {
         ObjectTools.requireNotEmpty(paths, CLASS_PATH);
         classpath_.addAll(CollectionTools.combineStringsToFiles(paths));
         return this;
@@ -593,7 +591,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #classPathStrings(Collection)
      * @see #classPath()
      */
-    public final DetektOperation classPath(@NonNull Collection<File> paths) {
+    public final DetektOperation classPath(Collection<File> paths) {
         ObjectTools.requireNotEmpty(paths, CLASS_PATH);
         classpath_.addAll(paths);
         return this;
@@ -623,7 +621,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #classPathStrings(Collection)
      * @see #classPath()
      */
-    public final DetektOperation classPathPaths(@NonNull Collection<Path> paths) {
+    public final DetektOperation classPathPaths(Collection<Path> paths) {
         ObjectTools.requireNotEmpty(paths, "classPathPaths");
         classpath_.addAll(CollectionTools.combinePathsToFiles(paths));
         return this;
@@ -644,7 +642,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #classPathPaths(Collection)
      * @see #classPath()
      */
-    public final DetektOperation classPathStrings(@NonNull Collection<String> paths) {
+    public final DetektOperation classPathStrings(Collection<String> paths) {
         ObjectTools.requireNotEmpty(paths, "classPathStrings");
         classpath_.addAll(CollectionTools.combineStringsToFiles(paths));
         return this;
@@ -664,7 +662,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #configStrings(Collection)
      * @see #config()
      */
-    public DetektOperation config(@NonNull File... configs) {
+    public DetektOperation config(File... configs) {
         ObjectTools.requireNotEmpty(configs, CONFIG);
         config_.addAll(List.of(configs));
         return this;
@@ -684,7 +682,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #configStrings(Collection)
      * @see #config()
      */
-    public DetektOperation config(@NonNull Path... configs) {
+    public DetektOperation config(Path... configs) {
         ObjectTools.requireNotEmpty(configs, CONFIG);
         config_.addAll(CollectionTools.combinePathsToFiles(configs));
         return this;
@@ -704,7 +702,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #configStrings(Collection)
      * @see #config()
      */
-    public DetektOperation config(@NonNull String... configs) {
+    public DetektOperation config(String... configs) {
         ObjectTools.requireNotEmpty(configs, CONFIG);
         config_.addAll(CollectionTools.combineStringsToFiles(configs));
         return this;
@@ -724,7 +722,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #configStrings(Collection)
      * @see #config()
      */
-    public final DetektOperation config(@NonNull Collection<File> configs) {
+    public final DetektOperation config(Collection<File> configs) {
         ObjectTools.requireNotEmpty(configs, CONFIG);
         config_.addAll(configs);
         return this;
@@ -753,7 +751,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #configStrings(Collection)
      * @see #config()
      */
-    public final DetektOperation configPaths(@NonNull Collection<Path> configs) {
+    public final DetektOperation configPaths(Collection<Path> configs) {
         ObjectTools.requireNotEmpty(configs, "configPaths");
         config_.addAll(CollectionTools.combinePathsToFiles(configs));
         return this;
@@ -765,13 +763,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @param resource the config resource path
      * @return this operation instance
      * @throws NullPointerException     if {@code resource} is {@code null}
-     * @throws IllegalArgumentException if {@code resource} is empty
+     * @throws IllegalArgumentException if {@code resource} is empty or blank
      * @see #configResource(File)
      * @see #configResource(Path)
      * @see #configResource()
      */
-    public DetektOperation configResource(@NonNull String resource) {
-        configResource_ = ObjectTools.requireNotEmpty(resource, "configResource");
+    public DetektOperation configResource(String resource) {
+        configResource_ = TextTools.requireNotBlank(resource, "configResource");
         return this;
     }
 
@@ -785,7 +783,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #configResource(Path)
      * @see #configResource()
      */
-    public DetektOperation configResource(@NonNull File resource) {
+    public DetektOperation configResource(File resource) {
         ObjectTools.requireNonNull(resource, "configResource");
         return configResource(resource.getAbsolutePath());
     }
@@ -800,7 +798,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #configResource(File)
      * @see #configResource()
      */
-    public DetektOperation configResource(@NonNull Path resource) {
+    public DetektOperation configResource(Path resource) {
         ObjectTools.requireNonNull(resource, "configResource");
         return configResource(resource.toFile().getAbsolutePath());
     }
@@ -813,6 +811,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #configResource(File)
      * @see #configResource(Path)
      */
+    @Nullable
     public String configResource() {
         return configResource_;
     }
@@ -831,7 +830,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #configPaths(Collection)
      * @see #config()
      */
-    public final DetektOperation configStrings(@NonNull Collection<String> configs) {
+    public final DetektOperation configStrings(Collection<String> configs) {
         ObjectTools.requireNotEmpty(configs, "configStrings");
         config_.addAll(CollectionTools.combineStringsToFiles(configs));
         return this;
@@ -881,7 +880,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #excludes(Collection)
      * @see #excludes()
      */
-    public DetektOperation excludes(@NonNull String... patterns) {
+    public DetektOperation excludes(String... patterns) {
         ObjectTools.requireNotEmpty(patterns, "excludes");
         excludes_.addAll(List.of(patterns));
         return this;
@@ -897,7 +896,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #excludes(String...)
      * @see #excludes()
      */
-    public final DetektOperation excludes(@NonNull Collection<String> patterns) {
+    public final DetektOperation excludes(Collection<String> patterns) {
         ObjectTools.requireNotEmpty(patterns, "excludes");
         excludes_.addAll(patterns);
         return this;
@@ -936,7 +935,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #includes(Collection)
      * @see #includes()
      */
-    public DetektOperation includes(@NonNull String... patterns) {
+    public DetektOperation includes(String... patterns) {
         ObjectTools.requireNotEmpty(patterns, "includes");
         includes_.addAll(List.of(patterns));
         return this;
@@ -953,7 +952,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #includes(String...)
      * @see #includes()
      */
-    public final DetektOperation includes(@NonNull Collection<String> patterns) {
+    public final DetektOperation includes(Collection<String> patterns) {
         ObjectTools.requireNotEmpty(patterns, "includes");
         includes_.addAll(patterns);
         return this;
@@ -982,7 +981,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #inputStrings(Collection)
      * @see #input()
      */
-    public final DetektOperation input(@NonNull Collection<File> paths) {
+    public final DetektOperation input(Collection<File> paths) {
         ObjectTools.requireNotEmpty(paths, INPUT);
         input_.addAll(paths);
         return this;
@@ -1002,7 +1001,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #inputStrings(Collection)
      * @see #input()
      */
-    public DetektOperation input(@NonNull String... paths) {
+    public DetektOperation input(String... paths) {
         ObjectTools.requireNotEmpty(paths, INPUT);
         input_.addAll(CollectionTools.combineStringsToFiles(paths));
         return this;
@@ -1022,7 +1021,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #inputStrings(Collection)
      * @see #input()
      */
-    public DetektOperation input(@NonNull File... paths) {
+    public DetektOperation input(File... paths) {
         ObjectTools.requireNotEmpty(paths, INPUT);
         input_.addAll(List.of(paths));
         return this;
@@ -1042,7 +1041,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #inputStrings(Collection)
      * @see #input()
      */
-    public DetektOperation input(@NonNull Path... paths) {
+    public DetektOperation input(Path... paths) {
         ObjectTools.requireNotEmpty(paths, INPUT);
         input_.addAll(CollectionTools.combinePathsToFiles(paths));
         return this;
@@ -1071,7 +1070,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #inputStrings(Collection)
      * @see #input()
      */
-    public final DetektOperation inputPaths(@NonNull Collection<Path> paths) {
+    public final DetektOperation inputPaths(Collection<Path> paths) {
         ObjectTools.requireNotEmpty(paths, "inputPaths");
         input_.addAll(CollectionTools.combinePathsToFiles(paths));
         return this;
@@ -1091,7 +1090,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #inputPaths(Collection)
      * @see #input()
      */
-    public final DetektOperation inputStrings(@NonNull Collection<String> paths) {
+    public final DetektOperation inputStrings(Collection<String> paths) {
         ObjectTools.requireNotEmpty(paths, "inputStrings");
         input_.addAll(CollectionTools.combineStringsToFiles(paths));
         return this;
@@ -1106,7 +1105,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @throws NullPointerException     if {@code path} is {@code null}
      * @throws IllegalArgumentException if {@code path} is blank
      */
-    public DetektOperation jdkHome(@NonNull String path) {
+    public DetektOperation jdkHome(String path) {
         jdkHome_ = TextTools.requireNotBlank(path, "jdkHome");
         return this;
     }
@@ -1122,7 +1121,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @throws NullPointerException     if {@code target} is {@code null}
      * @throws IllegalArgumentException if {@code target} is blank
      */
-    public DetektOperation jvmTarget(@NonNull String target) {
+    public DetektOperation jvmTarget(String target) {
         jvmTarget_ = TextTools.requireNotBlank(target, "jvmTarget");
         return this;
     }
@@ -1138,7 +1137,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @throws NullPointerException     if {@code version} is {@code null}
      * @throws IllegalArgumentException if {@code version} is blank
      */
-    public DetektOperation languageVersion(@NonNull String version) {
+    public DetektOperation languageVersion(String version) {
         languageVersion_ = TextTools.requireNotBlank(version, "languageVersion");
         return this;
     }
@@ -1147,10 +1146,14 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * Return exit code 0 only when found issues count does not exceed
      * specified issues count.
      *
-     * @param max the issues code
+     * @param max the issues count, must be &gt;= 0
      * @return this operation instance
+     * @throws IllegalArgumentException if {@code max} is negative
      */
     public DetektOperation maxIssues(int max) {
+        if (max < 0) {
+            throw new IllegalArgumentException("maxIssues must be >= 0");
+        }
         maxIssues_ = max;
         return this;
     }
@@ -1182,7 +1185,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #pluginsStrings(Collection)
      * @see #plugins()
      */
-    public DetektOperation plugins(@NonNull String... jars) {
+    public DetektOperation plugins(String... jars) {
         ObjectTools.requireNotEmpty(jars, PLUGINS);
         plugins_.addAll(CollectionTools.combineStringsToFiles(jars));
         return this;
@@ -1202,7 +1205,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #pluginsStrings(Collection)
      * @see #plugins()
      */
-    public DetektOperation plugins(@NonNull File... jars) {
+    public DetektOperation plugins(File... jars) {
         ObjectTools.requireNotEmpty(jars, PLUGINS);
         plugins_.addAll(List.of(jars));
         return this;
@@ -1222,7 +1225,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #pluginsStrings(Collection)
      * @see #plugins()
      */
-    public DetektOperation plugins(@NonNull Path... jars) {
+    public DetektOperation plugins(Path... jars) {
         ObjectTools.requireNotEmpty(jars, PLUGINS);
         plugins_.addAll(CollectionTools.combinePathsToFiles(jars));
         return this;
@@ -1242,7 +1245,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #pluginsStrings(Collection)
      * @see #plugins()
      */
-    public final DetektOperation plugins(@NonNull Collection<File> jars) {
+    public final DetektOperation plugins(Collection<File> jars) {
         ObjectTools.requireNotEmpty(jars, PLUGINS);
         plugins_.addAll(jars);
         return this;
@@ -1271,7 +1274,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #pluginsStrings(Collection)
      * @see #plugins()
      */
-    public final DetektOperation pluginsPaths(@NonNull Collection<Path> jars) {
+    public final DetektOperation pluginsPaths(Collection<Path> jars) {
         ObjectTools.requireNotEmpty(jars, "pluginsPaths");
         plugins_.addAll(CollectionTools.combinePathsToFiles(jars));
         return this;
@@ -1291,7 +1294,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @see #pluginsPaths(Collection)
      * @see #plugins()
      */
-    public final DetektOperation pluginsStrings(@NonNull Collection<String> jars) {
+    public final DetektOperation pluginsStrings(Collection<String> jars) {
         ObjectTools.requireNotEmpty(jars, "pluginsStrings");
         plugins_.addAll(CollectionTools.combineStringsToFiles(jars));
         return this;
@@ -1305,32 +1308,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @throws NullPointerException     if {@code reports} is {@code null} or contains {@code null} elements
      * @throws IllegalArgumentException if {@code reports} is empty
      */
-    public DetektOperation report(@NonNull Report... reports) {
+    public DetektOperation report(Report... reports) {
         ObjectTools.requireNotEmpty(reports, "report");
         report_.addAll(List.of(reports));
         return this;
-    }
-
-    // Retrieves the matching JARs files from the given directory.
-    private String getDetektJarList(File directory) {
-        var jars = new ArrayList<String>();
-
-        if (directory.isDirectory()) {
-            var files = directory.listFiles();
-            if (files != null) {
-                for (var f : files) {
-                    if (!f.getName().endsWith("-sources.jar") && !f.getName().endsWith("-javadoc.jar")) {
-                        for (var m : DETEKT_JARS) {
-                            if (f.getName().startsWith(m)) {
-                                jars.add(f.getAbsolutePath());
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return String.join(File.pathSeparator, jars);
     }
 
     private void parseArguments(List<String> args) {
@@ -1341,6 +1322,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         var arg = args.get(0);
         if (ARG_CREATE_BASELINE.equals(arg)) {
             createBaseline_ = true;
+            // bld idiom: consume the flag so BaseProject doesn't see it as unknown
             args.remove(0);
         }
     }

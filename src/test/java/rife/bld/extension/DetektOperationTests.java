@@ -28,13 +28,11 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
-import rife.bld.BaseProject;
-import rife.bld.Project;
 import rife.bld.blueprints.BaseProjectBlueprint;
 import rife.bld.extension.detekt.Report;
 import rife.bld.extension.detekt.ReportId;
-import rife.bld.extension.testing.LoggingExtension;
 import rife.bld.operations.exceptions.ExitStatusException;
+import rife.bld.testing.LoggingExtension;
 
 import java.io.File;
 import java.io.IOException;
@@ -109,11 +107,9 @@ class DetektOperationTests {
             Files.createDirectories(libBld);
             Files.writeString(libBld.resolve("detekt-cli-1.23.8-all.jar"), "dummy");
 
-            var project = new BaseProjectBlueprint(
-                    tempDir.toFile(), "com.test", "test", "Test");
-
             var op = new DetektOperation()
-                    .fromProject(project)
+                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"))
                     .input(new File("src/main.kt"))
                     .config("detekt.yml");
 
@@ -133,12 +129,9 @@ class DetektOperationTests {
             var detektJar = libBld.resolve("detekt-cli-1.23.8-all.jar");
             Files.writeString(detektJar, "dummy");
 
-            // BaseProjectBlueprint works because BaseProject implements it
-            var project = new BaseProjectBlueprint(
-                    tempDir.toFile(), "com.test", "test", "Test");
-            // libBldDirectory() will return tempDir/lib/bld by default
-
-            var op = new DetektOperation().fromProject(project);
+            var op = new DetektOperation().fromProject(
+                    new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"));
 
             // Force a huge --input list to blow past 30k chars
             var longInputs = new ArrayList<File>();
@@ -165,7 +158,7 @@ class DetektOperationTests {
             var content = Files.readString(argfilePath);
             assertThat(content)
                     .contains("-cp")
-                    .contains("detekt-cli-1.23.8-all.jar")
+                    .containsPattern("detekt-cli-\\d+(?:\\.\\d+)+\\.jar")
                     .contains("io.gitlab.arturbosch.detekt.cli.Main")
                     .contains("--input")
                     .contains("VeryLongPackageNameToEnsureWeExceedTheCommandLineLimitFile399.kt");
@@ -331,7 +324,8 @@ class DetektOperationTests {
             assertThat(args).isNotEmpty();
 
             var op = new DetektOperation()
-                    .fromProject(new BaseProject())
+                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"))
                     .allRules(true)
                     .autoCorrect(true)
                     .basePath("basePath")
@@ -599,7 +593,8 @@ class DetektOperationTests {
         @Test
         void processCommandListWithBooleanFlags() {
             var op = new DetektOperation()
-                    .fromProject(new Project())
+                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"))
                     .allRules(true)
                     .autoCorrect(true)
                     .buildUponDefaultConfig(true)
@@ -635,7 +630,8 @@ class DetektOperationTests {
             var cp2 = new File("lib/dep2.jar");
 
             var op = new DetektOperation()
-                    .fromProject(new Project())
+                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"))
                     .input(input1, input2)
                     .plugins(plugin1, plugin2)
                     .config(config1, config2)
@@ -658,7 +654,8 @@ class DetektOperationTests {
         @Test
         void processCommandListWithPathAndStringFlags() {
             var op = new DetektOperation()
-                    .fromProject(new Project())
+                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"))
                     .basePath("/tmp/base")
                     .baseline("/tmp/baseline.xml")
                     .configResource("my-config.yml")
@@ -683,7 +680,8 @@ class DetektOperationTests {
         @Test
         void processCommandListWithReports() {
             var op = new DetektOperation()
-                    .fromProject(new Project())
+                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"))
                     .report(new Report(ReportId.XML, "/reports/detekt.xml"),
                             new Report(ReportId.HTML, "/reports/detekt.html"));
 
@@ -698,7 +696,8 @@ class DetektOperationTests {
         @Test
         void processCommandListWithZeroMaxIssues() {
             var op = new DetektOperation()
-                    .fromProject(new Project())
+                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"))
                     .maxIssues(0);
             var commandList = op.executeConstructProcessCommandList();
             assertThat(commandList).doesNotContain("--max-issues");

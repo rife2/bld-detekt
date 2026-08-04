@@ -8,4 +8,4 @@ class ExampleTest {
     fun verifyHello() {
         assertEquals("Hello World!", Example().Message)
     }
-} // https://detekt.dev/docs/1.22.0/rules/empty-blocks#emptyfunctionblock
+} // https://detekt.dev/docs/rules/style/#newlineatendoffile
