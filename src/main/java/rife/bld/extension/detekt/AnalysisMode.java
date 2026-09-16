@@ -17,11 +17,33 @@
 package rife.bld.extension.detekt;
 
 /**
- * The report-id values.
+ * Analysis mode.
  *
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
- * @since 1.0
+ * @since 2.0
  */
-public enum ReportId {
-    CHECKSTYLE, HTML, MARKDOWN, SARIF
+public enum AnalysisMode {
+    /**
+     * Comprehensive but requires the correct compiler options to be provided.
+     */
+    FULL("full"),
+    /**
+     * Analysis cannot utilize compiler information and some rules cannot be run in this mode.
+     */
+    LIGHT("light");
+
+    private final String value;
+
+    AnalysisMode(String value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return value;
+    }
+
+    public String value() {
+        return value;
+    }
 }

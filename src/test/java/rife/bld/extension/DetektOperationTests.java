@@ -29,8 +29,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import rife.bld.blueprints.BaseProjectBlueprint;
-import rife.bld.extension.detekt.Report;
-import rife.bld.extension.detekt.ReportId;
+import rife.bld.extension.detekt.*;
 import rife.bld.operations.exceptions.ExitStatusException;
 import rife.bld.testing.LoggingExtension;
 
@@ -59,15 +58,21 @@ class DetektOperationTests {
         var baseFile = new File("/tmp/base");
         var baselinePath = Path.of("/tmp/baseline.xml");
         var configResourceString = "my-config.yml";
+        var generateConfigFile = new File("/tmp/detekt.yml");
+        var jdkHomePath = Path.of("/opt/jdk-21");
 
         var op = new DetektOperation()
                 .basePath(baseFile)
                 .baseline(baselinePath)
-                .configResource(configResourceString);
+                .configResource(configResourceString)
+                .generateConfig(generateConfigFile)
+                .jdkHome(jdkHomePath);
 
         assertThat(op.basePath()).isEqualTo(baseFile.getAbsolutePath());
         assertThat(op.baseline()).isEqualTo(baselinePath.toFile().getAbsolutePath());
         assertThat(op.configResource()).isEqualTo(configResourceString);
+        assertThat(op.generateConfig()).isEqualTo(generateConfigFile.getAbsolutePath());
+        assertThat(op.jdkHome()).isEqualTo(jdkHomePath.toFile().getAbsolutePath());
 
         // Test collection overloads
         var inputFile = new File("input.kt");
@@ -158,8 +163,8 @@ class DetektOperationTests {
             var content = Files.readString(argfilePath);
             assertThat(content)
                     .contains("-cp")
-                    .containsPattern("detekt-cli-\\d+(?:\\.\\d+)+\\.jar")
-                    .contains("io.gitlab.arturbosch.detekt.cli.Main")
+                    .containsPattern("detekt-cli-.*\\.jar")
+                    .contains("dev.detekt.cli.Main")
                     .contains("--input")
                     .contains("VeryLongPackageNameToEnsureWeExceedTheCommandLineLimitFile399.kt");
 
@@ -248,67 +253,6 @@ class DetektOperationTests {
     }
 
     @Nested
-    @DisplayName("Example Tests")
-    class ExampleTests {
-
-        @TempDir
-        private File tmpDir;
-
-        @Test
-        void exampleBaseline() throws IOException, ExitStatusException, InterruptedException {
-            var baseline = new File(tmpDir, "examples/src/test/resources/detekt-baseline.xml");
-            var op = new DetektOperation()
-                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
-                            "example", "Example"))
-                    .baseline(baseline)
-                    .createBaseline(true);
-
-            op.execute();
-            assertThat(baseline).exists();
-        }
-
-        @Test
-        void exampleMaxIssues() {
-            var op = new DetektOperation()
-                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
-                            "example", "Example"))
-                    .maxIssues(8);
-            assertThatNoException().isThrownBy(op::execute);
-        }
-
-        @Test
-        void exampleReports() {
-            var html = new File(tmpDir, "report.html");
-            var xml = new File(tmpDir, "report.xml");
-            var txt = new File(tmpDir, "report.txt");
-            var md = new File(tmpDir, "report.md");
-            var sarif = new File(tmpDir, "report.sarif");
-
-            var op = new DetektOperation()
-                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
-                            "example", "Example"))
-                    .report(new Report(ReportId.HTML, html.getAbsolutePath()))
-                    .report(new Report(ReportId.XML, xml.getAbsolutePath()))
-                    .report(new Report(ReportId.TXT, txt.getAbsolutePath()))
-                    .report(new Report(ReportId.MD, md.getAbsolutePath()))
-                    .report(new Report(ReportId.SARIF, sarif.getAbsolutePath()));
-
-            assertThatThrownBy(op::execute).isInstanceOf(ExitStatusException.class);
-
-            List.of(html, xml, txt, md, sarif).forEach(it -> assertThat(it).exists());
-        }
-
-        @Test
-        void examplesExecute() {
-            var op = new DetektOperation()
-                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
-                            "example", "Example"))
-                    .debug(true);
-            assertThatThrownBy(op::execute).isInstanceOf(ExitStatusException.class);
-        }
-    }
-
-    @Nested
     @DisplayName("Options Tests")
     class OptionsTests {
 
@@ -327,6 +271,7 @@ class DetektOperationTests {
                     .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
                             "example", "Example"))
                     .allRules(true)
+                    .analysisMode(AnalysisMode.FULL)
                     .autoCorrect(true)
                     .basePath("basePath")
                     .basePath(new File("basePath"))
@@ -345,16 +290,16 @@ class DetektOperationTests {
                     .disableDefaultRuleSets(true)
                     .excludes(List.of("excludes1", "excludes2"))
                     .excludes("excludes3", "excludes4")
-                    .generateConfig(true)
+                    .failOnSeverity(Severity.WARNING)
+                    .generateConfig("foo")
                     .includes(List.of("includes1", "includes2"))
                     .includes("includes3", "includes4", "includes5")
                     .input(new File("input1"))
                     .input("input2", "input3")
                     .input(List.of(new File("input4"), new File("input5")))
                     .jdkHome("jdkHome")
-                    .jvmTarget("jvmTarget")
-                    .languageVersion("languageVersion")
-                    .maxIssues(10)
+                    .jvmTarget(JvmTarget.JVM_20)
+                    .languageVersion(LanguageVersion.V_1_0)
                     .parallel(true)
                     .plugins(new File("jar1"))
                     .plugins("jar2", "jar3")
@@ -492,6 +437,32 @@ class DetektOperationTests {
         }
 
         @Nested
+        @DisplayName("Generate Config Tests")
+        class GenerateConfigTests {
+
+            @Test
+            void generateConfigAsFile() {
+                var op = new DetektOperation();
+                op.generateConfig(foo);
+                assertThat(op.generateConfig()).isEqualTo(foo.getAbsolutePath());
+            }
+
+            @Test
+            void generateConfigAsPath() {
+                var op = new DetektOperation();
+                op = op.generateConfig(bar.toPath());
+                assertThat(op.generateConfig()).isEqualTo(bar.getAbsolutePath());
+            }
+
+            @Test
+            void generateConfigAsString() {
+                var op = new DetektOperation();
+                op.generateConfig("foo");
+                assertThat(op.generateConfig()).isEqualTo("foo");
+            }
+        }
+
+        @Nested
         @DisplayName("Input Tests")
         class InputTests {
 
@@ -535,6 +506,32 @@ class DetektOperationTests {
                 var op = new DetektOperation();
                 op.inputStrings(List.of("foo", "bar"));
                 assertThat(op.input()).contains(foo, bar);
+            }
+        }
+
+        @Nested
+        @DisplayName("JdkHome Tests")
+        class JdkHomeTests {
+
+            @Test
+            void jdkHomeAsFile() {
+                var op = new DetektOperation();
+                op = op.jdkHome(foo);
+                assertThat(op.jdkHome()).isEqualTo(foo.getAbsolutePath());
+            }
+
+            @Test
+            void jdkHomeAsPath() {
+                var op = new DetektOperation();
+                op = op.jdkHome(bar.toPath());
+                assertThat(op.jdkHome()).isEqualTo(bar.getAbsolutePath());
+            }
+
+            @Test
+            void jdkHomeAsString() {
+                var op = new DetektOperation();
+                op.jdkHome("foo");
+                assertThat(op.jdkHome()).isEqualTo("foo");
             }
         }
 
@@ -601,7 +598,6 @@ class DetektOperationTests {
                     .createBaseline(true)
                     .debug(true)
                     .disableDefaultRuleSets(true)
-                    .generateConfig(true)
                     .parallel(true);
 
             var commandList = op.executeConstructProcessCommandList();
@@ -613,7 +609,6 @@ class DetektOperationTests {
                     "--create-baseline",
                     "--debug",
                     "--disable-default-rulesets",
-                    "--generate-config",
                     "--parallel"
             );
         }
@@ -660,9 +655,9 @@ class DetektOperationTests {
                     .baseline("/tmp/baseline.xml")
                     .configResource("my-config.yml")
                     .jdkHome("/opt/jdk")
-                    .jvmTarget("17")
-                    .languageVersion("1.9")
-                    .maxIssues(10);
+                    .jvmTarget(JvmTarget.JVM_17)
+                    .generateConfig("/tmp/gen.yml")
+                    .languageVersion(LanguageVersion.V_1_3);
 
             var commandList = op.executeConstructProcessCommandList();
 
@@ -672,8 +667,8 @@ class DetektOperationTests {
                     "--config-resource", "my-config.yml",
                     "--jdk-home", "/opt/jdk",
                     "--jvm-target", "17",
-                    "--language-version", "1.9",
-                    "--max-issues", "10"
+                    "--generate-config", "/tmp/gen.yml",
+                    "--language-version", "1.3"
             );
         }
 
@@ -682,25 +677,15 @@ class DetektOperationTests {
             var op = new DetektOperation()
                     .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
                             "example", "Example"))
-                    .report(new Report(ReportId.XML, "/reports/detekt.xml"),
+                    .report(new Report(ReportId.CHECKSTYLE, "/reports/detekt.txt"),
                             new Report(ReportId.HTML, "/reports/detekt.html"));
 
             var commandList = op.executeConstructProcessCommandList();
 
             assertThat(commandList).contains(
-                    "--report", "xml:/reports/detekt.xml",
+                    "--report", "checkstyle:/reports/detekt.txt",
                     "--report", "html:/reports/detekt.html"
             );
-        }
-
-        @Test
-        void processCommandListWithZeroMaxIssues() {
-            var op = new DetektOperation()
-                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
-                            "example", "Example"))
-                    .maxIssues(0);
-            var commandList = op.executeConstructProcessCommandList();
-            assertThat(commandList).doesNotContain("--max-issues");
         }
     }
 
@@ -708,6 +693,18 @@ class DetektOperationTests {
     @DisplayName("Validation Tests")
     @SuppressWarnings("DataFlowIssue")
     class ValidationTests {
+
+        @Test
+        void analysisModeWithNull() {
+            assertThatThrownBy(() -> new DetektOperation().analysisMode(null))
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @Test
+        void apiVersionWithNullIsAllowed() {
+            var op = new DetektOperation().apiVersion(ApiVersion.V_1_0);
+            assertThatCode(() -> op.apiVersion(null)).doesNotThrowAnyException();
+        }
 
         @ParameterizedTest
         @EmptySource
@@ -849,8 +846,31 @@ class DetektOperationTests {
         }
 
         @Test
+        void failOnSeverityWithNull() {
+            assertThatThrownBy(() -> new DetektOperation().failOnSeverity(null))
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @Test
         void fromProjectWithNull() {
             assertThatThrownBy(() -> new DetektOperation().fromProject(null))
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @ParameterizedTest
+        @EmptySource
+        void generateConfigWithEmpty(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().generateConfig(arg))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        void generateConfigWithNull() {
+            assertThatThrownBy(() -> new DetektOperation().generateConfig((String) null))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().generateConfig((File) null))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().generateConfig((Path) null))
                     .isInstanceOf(NullPointerException.class);
         }
 
@@ -914,6 +934,37 @@ class DetektOperationTests {
 
         @ParameterizedTest
         @EmptySource
+        void jdkHomeWithEmpty(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().jdkHome(arg))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        void jdkHomeWithNull() {
+            assertThatThrownBy(() -> new DetektOperation().jdkHome((String) null))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().jdkHome((File) null))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().jdkHome((Path) null))
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @Test
+        void jvmTargetWithNull() {
+            assertThatThrownBy(() -> new DetektOperation().jvmTarget(null))
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @Test
+        void languageVersionWithNullIsAllowed() {
+            // languageVersion has no default -> @Nullable, null should clear it
+            var op = new DetektOperation().languageVersion(LanguageVersion.V_1_0);
+            assertThatCode(() -> op.languageVersion(null)).doesNotThrowAnyException();
+            assertThat(op.executeConstructProcessCommandList()).doesNotContain("--language-version");
+        }
+
+        @ParameterizedTest
+        @EmptySource
         void pluginsWithEmpty(String arg) {
             assertThatThrownBy(() -> new DetektOperation().plugins(arg))
                     .as("varargs with empty element").isInstanceOf(IllegalArgumentException.class);
@@ -947,10 +998,60 @@ class DetektOperationTests {
         void reportWithNull(Report arg) {
             assertThatThrownBy(() -> new DetektOperation().report(arg))
                     .as("varargs with null element").isInstanceOf(NullPointerException.class);
-            assertThatThrownBy(() -> new DetektOperation().report(new Report(ReportId.TXT, "out.txt"), arg))
+            assertThatThrownBy(() -> new DetektOperation().report(new Report(ReportId.CHECKSTYLE, "out.txt"), arg))
                     .as("array has null element").isInstanceOf(NullPointerException.class);
             assertThatThrownBy(() -> new DetektOperation().report((Report[]) null))
                     .as("array is null").isInstanceOf(NullPointerException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("Example Tests")
+    class cdExampleTests {
+
+        @TempDir
+        private File tmpDir;
+
+        @Test
+        void exampleBaseline() throws IOException, ExitStatusException, InterruptedException {
+            var baseline = new File(tmpDir, "examples/src/test/resources/detekt-baseline.xml");
+            var op = new DetektOperation()
+                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"))
+                    .baseline(baseline)
+                    .createBaseline(true);
+
+            op.execute();
+            assertThat(baseline).exists();
+        }
+
+        @Test
+        void exampleReports() {
+            var html = new File(tmpDir, "report.html");
+            var checkstyle = new File(tmpDir, "report.txt");
+            var md = new File(tmpDir, "report.md");
+            var sarif = new File(tmpDir, "report.sarif");
+
+            var op = new DetektOperation()
+                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"))
+                    .report(new Report(ReportId.CHECKSTYLE, checkstyle.getAbsolutePath()))
+                    .report(new Report(ReportId.HTML, html.getAbsolutePath()))
+                    .report(new Report(ReportId.MARKDOWN, md.getAbsolutePath()))
+                    .report(new Report(ReportId.SARIF, sarif.getAbsolutePath()));
+
+            assertThatThrownBy(op::execute).isInstanceOf(ExitStatusException.class);
+
+            List.of(checkstyle, html, md, sarif).forEach(it -> assertThat(it).exists());
+        }
+
+        @Test
+        void examplesExecute() {
+            var op = new DetektOperation()
+                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"))
+                    .debug(true);
+            assertThatThrownBy(op::execute).isInstanceOf(ExitStatusException.class);
         }
     }
 }

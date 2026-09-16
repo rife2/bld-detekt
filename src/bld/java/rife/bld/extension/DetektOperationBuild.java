@@ -34,7 +34,7 @@ public class DetektOperationBuild extends Project {
     public DetektOperationBuild() {
         pkg = "rife.bld.extension";
         name = "DetektOperation";
-        version = version(1, 0, 0);
+        version = version(2, 0, 0, "SNAPSHOT");
 
         javaRelease = 17;
 
@@ -48,8 +48,7 @@ public class DetektOperationBuild extends Project {
                 .include(dependency("com.uwyn.rife2", "bld-extensions-tools",
                         version(1, 3, 0)))
                 .include(dependency("com.uwyn.rife2", "bld", version(3, 0, 1)))
-                .include(dependency("io.gitlab.arturbosch.detekt", "detekt-cli",
-                        version(1, 23, 8)));
+                .include(dependency("dev.detekt", "detekt-cli", "2.0.0-alpha.6"));
         scope(provided)
                 .include(dependency("org.jspecify", "jspecify", "1.0.1"))
                 .include(dependency("com.github.spotbugs", "spotbugs-annotations",

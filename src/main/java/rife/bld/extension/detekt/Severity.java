@@ -17,11 +17,32 @@
 package rife.bld.extension.detekt;
 
 /**
- * The report-id values.
+ * Severity that cause the build to fail.
  *
  * @author <a href="https://erik.thauvin.net/">Erik C. Thauvin</a>
- * @since 1.0
+ * @since 2.0
  */
-public enum ReportId {
-    CHECKSTYLE, HTML, MARKDOWN, SARIF
+public enum Severity {
+    ERROR("error"),
+    WARNING("warning"),
+    INFO("info"),
+    /**
+     * Detekt will never fail regardless of the number of issues and their severities.
+     */
+    NEVER("never");
+
+    private final String value;
+
+    Severity(String value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return value;
+    }
+
+    public String value() {
+        return value;
+    }
 }

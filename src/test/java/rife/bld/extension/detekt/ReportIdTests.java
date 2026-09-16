@@ -27,15 +27,36 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ReportIdTests {
 
     @Test
+    @DisplayName("Should have 4 report IDs")
+    void count() {
+        assertThat(ReportId.values()).hasSize(4);
+    }
+
+    @Test
     @DisplayName("Should contain all expected report IDs in the correct order")
     void enumValues() {
         assertThat(ReportId.values()).containsExactly(
-                ReportId.TXT,
-                ReportId.XML,
+                ReportId.CHECKSTYLE,
                 ReportId.HTML,
-                ReportId.MD,
+                ReportId.MARKDOWN,
                 ReportId.SARIF
         );
+    }
+
+    @ParameterizedTest
+    @EnumSource(ReportId.class)
+    @DisplayName("name() and toString() should be non-blank and uppercase")
+    void nameAndToString(ReportId reportId) {
+        assertThat(reportId.name()).isNotBlank().isUpperCase();
+        assertThat(reportId.toString()).isNotBlank();
+    }
+
+    @ParameterizedTest
+    @EnumSource(ReportId.class)
+    @DisplayName("ordinal should be unique and match declaration order")
+    void ordinal(ReportId reportId) {
+        assertThat(reportId.ordinal()).isGreaterThanOrEqualTo(0).isLessThan(ReportId.values().length);
+        assertThat(ReportId.values()[reportId.ordinal()]).isEqualTo(reportId);
     }
 
     @ParameterizedTest
@@ -51,5 +72,12 @@ class ReportIdTests {
         assertThatThrownBy(() -> ReportId.valueOf("JSON"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("No enum constant rife.bld.extension.detekt.ReportId.JSON");
+    }
+
+    @Test
+    @DisplayName("The valueOf() method should throw NPE for null")
+    void valueOfNull() {
+        assertThatThrownBy(() -> ReportId.valueOf(null))
+                .isInstanceOf(NullPointerException.class);
     }
 }

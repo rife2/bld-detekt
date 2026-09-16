@@ -1,10 +1,172 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="EntryPointsManager">
+    <entry_points version="2.0">
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ReportId CHECKSTYLE" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ReportId HTML" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.Severity INFO" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_10" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_11" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_12" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_13" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_14" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_15" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_16" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_18" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_19" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_1_6" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_21" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_22" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_23" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_24" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_25" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_26" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.JvmTarget JVM_9" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ReportId MARKDOWN" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.Severity NEVER" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ReportId SARIF" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_1_1" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_1_1" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_1_2" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_1_2" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_1_3" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_1_4" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_1_4" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_1_5" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_1_5" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_1_6" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_1_6" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_1_7" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_1_7" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_1_8" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_1_8" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_1_9" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_1_9" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_2_0" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_2_0" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_2_1" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_2_1" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_2_2" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_2_2" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_2_3" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_2_3" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_2_4" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_2_4" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.ApiVersion V_2_5" />
+      <entry_point TYPE="field" FQNAME="rife.bld.extension.detekt.LanguageVersion V_2_5" />
+    </entry_points>
     <pattern value="rife.bld.extension.DetektOperationBuild" method="pmd" />
     <pattern value="rife.bld.extension.DetektOperationBuild" />
     <pattern value="rife.bld.extension.DetektOperationBuild" method="reporter" />
     <pattern value="rife.bld.extension.DetektOperationBuild" method="spotbugs" />
+    <pattern value="rife.bld.extension.DetektOperationTests" method="allOverloadedMethods" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="analysisModeWithNull" />
+    <pattern value="rife.bld.extension.detekt.ApiVersion" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="apiVersionWithNullIsAllowed" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ArgFileTests" method="argFileNotUsedWhenCommandLineShort" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ArgFileTests" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ArgFileTests" method="argFileUsedWhenCommandLineTooLong" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.BaselineTests" method="baselineAsFile" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.BaselineTests" method="baselineAsPath" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.BaselineTests" method="baselineAsString" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.BaselineTests" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="baselineWithEmpty" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="baselineWithNull" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.BasePathTests" method="basePathAsFile" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.BasePathTests" method="basePathAsPath" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.BasePathTests" method="basePathAsString" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.BasePathTests" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="basePathWithEmpty" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="basePathWithNull" />
+    <pattern value="rife.bld.extension.DetektOperationTests.cdExampleTests" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests" method="checkAllParameters" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.ClassPathTests" method="classPathAsFileArray" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.ClassPathTests" method="classPathAsFileList" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.ClassPathTests" method="classPathAsPathArray" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.ClassPathTests" method="classPathAsPathList" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.ClassPathTests" method="classPathAsStingArray" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.ClassPathTests" method="classPathAsStringList" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.ClassPathTests" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="classPathWithEmpty" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="classPathWithNull" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ConfigTests" method="configAsFileArray" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ConfigTests" method="configAsFileList" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ConfigTests" method="configAsPathArray" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ConfigTests" method="configAsPathList" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ConfigTests" method="configAsStringArray" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ConfigTests" method="configAsStringList" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ConfigTests" method="configResourceAsFile" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ConfigTests" method="configResourceAsPath" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ConfigTests" method="configResourceAsString" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="configResourceWithEmpty" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="configResourceWithNull" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ConfigTests" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="configWithEmpty" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="configWithNull" />
+    <pattern value="rife.bld.extension.detekt.ReportIdTests" method="count" />
+    <pattern value="rife.bld.extension.DetektOperationTests" />
+    <pattern value="rife.bld.extension.detekt.ReportIdTests" method="enumValues" />
+    <pattern value="rife.bld.extension.DetektOperationTests.cdExampleTests" method="exampleBaseline" />
+    <pattern value="rife.bld.extension.DetektOperationTests.cdExampleTests" method="exampleReports" />
+    <pattern value="rife.bld.extension.DetektOperationTests.cdExampleTests" method="examplesExecute" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="excludesWithEmpty" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="excludesWithNull" />
+    <pattern value="rife.bld.extension.DetektOperationTests" method="executeNoProject" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="failOnSeverityWithNull" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="fromProjectWithNull" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.GenerateConfigTests" method="generateConfigAsFile" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.GenerateConfigTests" method="generateConfigAsPath" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.GenerateConfigTests" method="generateConfigAsString" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.GenerateConfigTests" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="generateConfigWithEmpty" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="generateConfigWithNull" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="includesWithEmpty" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="includesWithNull" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.InputTests" method="inputAsFileArray" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.InputTests" method="inputAsFileList" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.InputTests" method="inputAsPathArray" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.InputTests" method="inputAsPathList" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.InputTests" method="inputAsStringArray" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.InputTests" method="inputAsStringList" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.InputTests" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="inputWithEmpty" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="inputWithNull" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.JdkHomeTests" method="jdkHomeAsFile" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.JdkHomeTests" method="jdkHomeAsPath" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.JdkHomeTests" method="jdkHomeAsString" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.JdkHomeTests" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="jdkHomeWithEmpty" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="jdkHomeWithNull" />
+    <pattern value="rife.bld.extension.detekt.JvmTarget" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="jvmTargetWithNull" />
+    <pattern value="rife.bld.extension.detekt.LanguageVersion" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="languageVersionWithNullIsAllowed" />
+    <pattern value="rife.bld.extension.DetektOperationBuild" method="main" />
+    <pattern value="rife.bld.extension.detekt.ReportIdTests" method="nameAndToString" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests" />
+    <pattern value="rife.bld.extension.detekt.ReportIdTests" method="ordinal" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.PluginsTests" method="pluginsAsFileArray" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.PluginsTests" method="pluginsAsFileList" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.PluginsTests" method="pluginsAsPathArray" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.PluginsTests" method="pluginsAsPathList" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.PluginsTests" method="pluginsAsStringArray" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.PluginsTests" method="pluginsAsStringList" />
+    <pattern value="rife.bld.extension.DetektOperationTests.OptionsTests.PluginsTests" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="pluginsWithEmpty" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="pluginsWithNull" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ProcessCommandListTests" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ProcessCommandListTests" method="processCommandListWithBooleanFlags" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ProcessCommandListTests" method="processCommandListWithCollectionFlags" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ProcessCommandListTests" method="processCommandListWithPathAndStringFlags" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ProcessCommandListTests" method="processCommandListWithReports" />
+    <pattern value="rife.bld.extension.detekt.ReportId" />
+    <pattern value="rife.bld.extension.detekt.ReportIdTests" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" method="reportWithNull" />
+    <pattern value="rife.bld.extension.detekt.Severity" />
+    <pattern value="rife.bld.extension.DetektOperationTests.ValidationTests" />
+    <pattern value="rife.bld.extension.detekt.ReportIdTests" method="valueOf" />
+    <pattern value="rife.bld.extension.detekt.ReportIdTests" method="valueOfInvalid" />
+    <pattern value="rife.bld.extension.detekt.ReportIdTests" method="valueOfNull" />
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="17" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build" />

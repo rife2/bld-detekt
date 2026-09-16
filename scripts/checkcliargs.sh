@@ -1,6 +1,6 @@
 #!/bin/bash
 
-main=io.gitlab.arturbosch.detekt.cli.Main
+main=dev.detekt.cli.Main
 new=/tmp/checkcliargs-new
 old=/tmp/checkcliargs-old
 

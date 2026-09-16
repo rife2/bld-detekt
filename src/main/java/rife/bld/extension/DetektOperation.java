@@ -21,8 +21,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import rife.bld.BaseProject;
 import rife.bld.dependencies.Dependency;
-import rife.bld.extension.detekt.Report;
-import rife.bld.extension.detekt.ReportId;
+import rife.bld.extension.detekt.*;
 import rife.bld.extension.tools.CollectionTools;
 import rife.bld.extension.tools.ObjectTools;
 import rife.bld.extension.tools.PathTools;
@@ -34,12 +33,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Performs static code analysis with <a href="https://detekt.dev/">Detekt</a>.
@@ -55,6 +53,7 @@ import java.util.logging.Logger;
 public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
     private static final String ARG_CREATE_BASELINE = "--create-baseline";
+    private static final Pattern ARTIFACT_ID_PATTERN = Pattern.compile("-\\d+.*\\.jar$");
     private static final String BASELINE = "baseline";
     private static final String CLASS_PATH = "classPath";
     private static final String CONFIG = "config";
@@ -69,6 +68,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     private final List<File> plugins_ = new ArrayList<>();
     private final List<Report> report_ = new ArrayList<>();
     private boolean allRules_;
+    private AnalysisMode analysisMode_ = AnalysisMode.LIGHT;
+    private @Nullable ApiVersion apiVersion_;
     private boolean autoCorrect_;
     private @Nullable String basePath_;
     private @Nullable String baseline_;
@@ -78,11 +79,11 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     private boolean debug_;
     private @Nullable String detektClassPathJars_;
     private boolean disableDefaultRuleSets_;
-    private boolean generateConfig_;
+    private Severity failOnSeverity_ = Severity.ERROR;
+    private @Nullable String generateConfig_;
     private @Nullable String jdkHome_;
-    private @Nullable String jvmTarget_;
-    private @Nullable String languageVersion_;
-    private int maxIssues_;
+    private JvmTarget jvmTarget_ = JvmTarget.JVM_1_8;
+    private @Nullable LanguageVersion languageVersion_;
     private boolean parallel_;
     private @Nullable BaseProject project_;
 
@@ -131,182 +132,137 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     @Override
     protected List<String> executeConstructProcessCommandList() {
-        final List<String> args = new ArrayList<>(50); // ~2 args per option, ~25 options
+        final List<String> args = new ArrayList<>(50);
+
         if (project_ != null) {
             args.add(javaTool());
             args.add("-cp");
-            args.add(PathTools.joinClasspath(
-                            project_.extensionClasspathJars(
-                                    new Dependency("io.gitlab.arturbosch.detekt", "detekt-cli")
-                            )
-                    )
-            );
-            args.add("io.gitlab.arturbosch.detekt.cli.Main");
+            args.add(PathTools.joinClasspath(resolveDetektJars()));
+            args.add("dev.detekt.cli.Main");
 
-            // all-rules
             if (allRules_) {
                 args.add("--all-rules");
             }
-
-            // auto-correct
+            if (analysisMode_ != AnalysisMode.LIGHT) {
+                args.add("--analysis-mode");
+                args.add(analysisMode_.value());
+            }
+            if (apiVersion_ != null) {
+                args.add("--api-version");
+                args.add(apiVersion_.version());
+            }
             if (autoCorrect_) {
                 args.add("--auto-correct");
             }
-
-            // base-path
             if (TextTools.isNotBlank(basePath_)) {
                 args.add("--base-path");
                 args.add(basePath_);
             }
-
-            // baseline
             if (TextTools.isNotBlank(baseline_)) {
                 args.add("--baseline");
                 args.add(baseline_);
             }
-
-            // build-upon-default-config
             if (buildUponDefaultConfig_) {
                 args.add("--build-upon-default-config");
             }
-
-            // classpath - single flag, pathSeparator joined
             if (!classpath_.isEmpty()) {
                 args.add("--classpath");
                 args.add(String.join(File.pathSeparator, classpath_.stream().map(File::getAbsolutePath).toList()));
             }
-
-            // config - single flag, semicolon joined
             if (!config_.isEmpty()) {
                 args.add("--config");
                 args.add(String.join(";", config_.stream().map(File::getAbsolutePath).toList()));
             }
-
-            // config-resource
             if (TextTools.isNotBlank(configResource_)) {
                 args.add("--config-resource");
                 args.add(configResource_);
             }
-
-            // create-baseline
             if (createBaseline_) {
                 args.add("--create-baseline");
             }
-
-            // debug
             if (debug_) {
                 args.add("--debug");
             }
-
-            // disable-default-rulesets
             if (disableDefaultRuleSets_) {
                 args.add("--disable-default-rulesets");
             }
-
-            // excludes - single flag, comma joined
             if (!excludes_.isEmpty()) {
                 args.add("--excludes");
                 args.add(String.join(",", excludes_));
             }
-
-            // generate-config
-            if (generateConfig_) {
+            if (generateConfig_ != null) {
                 args.add("--generate-config");
+                args.add(generateConfig_);
             }
-
-            // includes - single flag, comma joined
             if (!includes_.isEmpty()) {
                 args.add("--includes");
                 args.add(String.join(",", includes_));
             }
-
-            // input - repeatable
             if (!input_.isEmpty()) {
                 for (File f : input_) {
                     args.add("--input");
                     args.add(f.getAbsolutePath());
                 }
             }
-
-            // jdk-home
             if (TextTools.isNotBlank(jdkHome_)) {
                 args.add("--jdk-home");
                 args.add(jdkHome_);
             }
-
-            // jvm-target
-            if (TextTools.isNotBlank(jvmTarget_)) {
+            if (jvmTarget_ != JvmTarget.JVM_1_8) {
                 args.add("--jvm-target");
-                args.add(jvmTarget_);
+                args.add(jvmTarget_.version());
             }
-
-            // language-version
-            if (TextTools.isNotBlank(languageVersion_)) {
+            if (languageVersion_ != null) {
                 args.add("--language-version");
-                args.add(languageVersion_);
+                args.add(languageVersion_.version());
             }
-
-            // max-issues
-            if (maxIssues_ > 0) {
-                args.add("--max-issues");
-                args.add(String.valueOf(maxIssues_));
-            }
-
-            // parallel
             if (parallel_) {
                 args.add("--parallel");
             }
-
-            // plugins - repeatable
             if (!plugins_.isEmpty()) {
                 for (File f : plugins_) {
                     args.add("--plugins");
                     args.add(f.getAbsolutePath());
                 }
             }
-
-            // report - repeatable
             if (!report_.isEmpty()) {
                 report_.forEach(it -> {
                     args.add("--report");
                     args.add(it.id().name().toLowerCase() + ":" + it.path());
                 });
             }
+            if (failOnSeverity_ != Severity.ERROR) {
+                args.add("--fail-on-severity");
+                args.add(failOnSeverity_.value());
+            }
 
             if (logger.isLoggable(Level.FINE) && !silent()) {
                 logger.fine(String.join(" ", args));
             }
 
-            // Switch to @argfile if command line would be too long for Windows
             int totalLen = args.stream().mapToInt(String::length).sum() + args.size() - 1;
             if (totalLen > 30000 && args.size() > 1) {
                 try {
                     var javaCmd = args.get(0);
                     var argFileArgs = args.subList(1, args.size());
-
                     var argFile = Files.createTempFile("detekt-", ".args");
                     var lines = argFileArgs.stream()
                             .map(s -> s.contains(" ") ? "\"" + s.replace("\"", "\\\"") + "\"" : s)
                             .toList();
                     Files.write(argFile, lines);
                     argFile.toFile().deleteOnExit();
-
                     if (logger.isLoggable(Level.FINE) && !silent()) {
                         logger.fine("Using @argfile: " + argFile + " for command length " + totalLen);
                     }
-
                     return List.of(javaCmd, "@" + argFile.toAbsolutePath());
                 } catch (IOException e) {
                     if (logger.isLoggable(Level.WARNING) && !silent()) {
                         logger.log(Level.WARNING,
-                                "Failed to create @argfile, falling back to long command: " + e.getLocalizedMessage(),
-                                e);
+                                "Failed to create @argfile, falling back to long command: " + e.getLocalizedMessage(), e);
                     }
-                    // fall through and return full args
                 }
             }
         }
-
         return args;
     }
 
@@ -327,7 +283,6 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * @return this operation instance
      * @throws NullPointerException if {@code project} is {@code null}
      */
-
     @Override
     public DetektOperation fromProject(BaseProject project) {
         project_ = ObjectTools.requireNonNull(project, "fromProject");
@@ -340,7 +295,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         if (excludes_.isEmpty()) {
             excludes(".*/build/.*", ".*/resources/.*");
         }
-        detektClassPathJars_ = PathTools.joinClasspath(project_.extensionClasspathJars("io.gitlab.arturbosch.detekt", "detekt-cli"));
+        detektClassPathJars_ = PathTools.joinClasspath(
+                project_.extensionClasspathJars("dev.detekt", "detekt-cli")
+        );
 
         parseArguments(project_.arguments());
 
@@ -349,6 +306,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
     /**
      * Activates all available (even unstable) rules.
+     * <p>
+     * Default is {@code false}
      *
      * @param allRules {@code true} or {@code false}
      * @return this operation instance
@@ -359,11 +318,44 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Allow rules to autocorrect code if they support it. The default rule
-     * sets do NOT support autocorrecting and won't change any line in the
-     * users code base. However, custom rules can be written to support
-     * autocorrecting. The additional 'formatting' rule set, added with
-     * {@link #plugins(String...) Plugins}, does support it and needs this flag.
+     * Sets the analysis mode used by detekt.
+     * <ul>
+     *   <li>{@link AnalysisMode#FULL} - Comprehensive but requires the correct compiler options to be provided.</li>
+     *   <li>{@link AnalysisMode#LIGHT} - Cannot utilize compiler information and some rules cannot be run in this
+     *   mode.</li>
+     * </ul>
+     * Default is {@link AnalysisMode#LIGHT}
+     *
+     * @param mode the analysis mode
+     * @return this operation instance
+     * @throws NullPointerException if {@code mode} is {@code null}
+     */
+    public DetektOperation analysisMode(AnalysisMode mode) {
+        analysisMode_ = ObjectTools.requireNonNull(mode, "analysisMode");
+        return this;
+    }
+
+    /**
+     * Kotlin API version used by the code under analysis.
+     * <p>
+     * Some rules use this information to provide more specific rule violation messages.
+     *
+     * @param version the api version
+     * @return this operation instance
+     */
+    public DetektOperation apiVersion(@Nullable ApiVersion version) {
+        apiVersion_ = version;
+        return this;
+    }
+
+    /**
+     * Allow rules to autocorrect code if they support it.
+     * <p>
+     * The default rule sets do NOT support autocorrecting and won't change any line in the users code base.
+     * However, custom rules can be written to support autocorrecting. The additional 'ktlint' rule set,
+     * added with {@link #plugins(String...) Plugins}, does support it and needs this flag.
+     * <p>
+     * Default is {@code false}
      *
      * @param autoCorrect {@code true} or {@code false}
      * @return this operation instance
@@ -374,9 +366,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Specifies a directory as the base path. Currently, it impacts all file
-     * paths in the formatted reports. File paths in console output and txt
-     * report are not affected and remain as absolute paths.
+     * Specifies a directory as the base path.
+     * <p>
+     * Currently, it impacts all file paths in the formatted reports. File paths in console output are not affected
+     * and remain as absolute paths.
      *
      * @param path the directory path
      * @return this operation instance
@@ -392,9 +385,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Specifies a directory as the base path. Currently, it impacts all file
-     * paths in the formatted reports. File paths in console output and txt
-     * report are not affected and remain as absolute paths.
+     * Specifies a directory as the base path.
+     * <p>
+     * Currently, it impacts all file paths in the formatted reports. File paths in console output are not affected
+     * and remain as absolute paths.
      *
      * @param path the directory path
      * @return this operation instance
@@ -422,9 +416,10 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Specifies a directory as the base path. Currently, it impacts all file
-     * paths in the formatted reports. File paths in console output and txt
-     * report are not affected and remain as absolute paths.
+     * Specifies a directory as the base path.
+     * <p>
+     * Currently, it impacts all file paths in the formatted reports. File paths in console output are not affected
+     * and remain as absolute paths.
      *
      * @param path the directory path
      * @return this operation instance
@@ -501,9 +496,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Preconfigures detekt with a bunch of rules and some opinionated defaults
-     * for you. Allows additional provided configurations to override the
-     * defaults.
+     * Preconfigures detekt with a bunch of rules and some opinionated default for you.
+     * <p>
+     * Allows additional provided configurations to override the defaults.
      *
      * @param buildUponDefaultConfig {@code true} or {@code false}
      * @return this operation instance
@@ -514,7 +509,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
+     * Paths where to find user class files and jar dependencies.
+     * <p>
      * Used for type resolution.
      *
      * @param paths one or more files
@@ -535,7 +531,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
+     * Paths where to find user class files and jar dependencies.
+     * <p>
      * Used for type resolution.
      *
      * @param paths one or more files
@@ -556,7 +553,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
+     * Paths where to find user class files and jar dependencies.
+     * <p>
      * Used for type resolution.
      *
      * @param paths one or more files
@@ -577,7 +575,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
+     * Paths where to find user class files and jar dependencies.
+     * <p>
      * Used for type resolution.
      *
      * @param paths the paths
@@ -600,14 +599,15 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     /**
      * Paths where to find user class files and jar dependencies.
      *
-     * @return the paths
+     * @return the classpath
      */
     public List<File> classPath() {
         return classpath_;
     }
 
     /**
-     * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
+     * Paths where to find user class files and jar dependencies.
+     * <p>
      * Used for type resolution.
      *
      * @param paths the paths
@@ -628,7 +628,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * EXPERIMENTAL: Paths where to find user class files and jar dependencies.
+     * Paths where to find user class files and jar dependencies.
+     * <p>
      * Used for type resolution.
      *
      * @param paths the paths
@@ -839,6 +840,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     /**
      * Treats current analysis findings as a smell baseline for future detekt
      * runs.
+     * <p>
+     * Default is {@code false}
      *
      * @param createBaseline {@code true} or {@code false}
      * @return this operation instance
@@ -850,6 +853,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
     /**
      * Prints extra information about configurations and extensions.
+     * <p>
+     * Default is {@code false}
      *
      * @param debug {@code true} or {@code false}
      * @return this operation instance
@@ -861,6 +866,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
     /**
      * Disables default rule sets.
+     * <p>
+     * Default is {@code false}
      *
      * @param disable {@code true} or {@code false}
      * @return this operation instance
@@ -912,21 +919,85 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Export default config. Path can be specified with {@link #config config} option.
+     * Specifies the minimum severity that causes the build to fail.
      * <p>
-     * Default path: {@code default-detekt-config.yml}
+     * When the value is set to {@link Severity#NEVER} detekt will not fail regardless of the number of
+     * issues and their severities.
+     * <p>
+     * Default is {@link Severity#ERROR}
      *
-     * @param generate {@code true} or {@code false}
+     * @param severity the severity
      * @return this operation instance
+     * @throws NullPointerException if {@code severity} is {@code null}
      */
-    public DetektOperation generateConfig(boolean generate) {
-        generateConfig_ = generate;
+    public DetektOperation failOnSeverity(Severity severity) {
+        failOnSeverity_ = ObjectTools.requireNonNull(severity, "failOnSeverity");
         return this;
     }
 
     /**
-     * Globbing patterns describing paths to include in the analysis. Useful in
-     * combination with {@link #excludes() excludes} patterns.
+     * Export default config to the provided path.
+     *
+     * @param path the path
+     * @return this operation instance
+     * @throws NullPointerException     if {@code path} is {@code null}
+     * @throws IllegalArgumentException if {@code path} is empty or blank
+     * @see #generateConfig(File)
+     * @see #generateConfig(Path)
+     * @see #generateConfig()
+     */
+    public DetektOperation generateConfig(String path) {
+        generateConfig_ = TextTools.requireNotBlank(path, "generateConfig");
+        return this;
+    }
+
+    /**
+     * Export default config to the provided path.
+     *
+     * @param path the path
+     * @return this operation instance
+     * @throws NullPointerException if {@code path} is {@code null}
+     * @see #generateConfig(String)
+     * @see #generateConfig(Path)
+     * @see #generateConfig()
+     */
+    public DetektOperation generateConfig(File path) {
+        ObjectTools.requireNonNull(path, "generateConfig");
+        return generateConfig(path.getAbsolutePath());
+    }
+
+    /**
+     * Export default config to the provided path.
+     *
+     * @param path the path
+     * @return this operation instance
+     * @throws NullPointerException if {@code path} is {@code null}
+     * @see #generateConfig(String)
+     * @see #generateConfig(File)
+     * @see #generateConfig()
+     */
+    public DetektOperation generateConfig(Path path) {
+        ObjectTools.requireNonNull(path, "generateConfig");
+        return generateConfig(path.toFile().getAbsolutePath());
+    }
+
+    /**
+     * Retrieves the path of the generated config.
+     *
+     * @return the config path
+     * @see #generateConfig(String)
+     * @see #generateConfig(File)
+     * @see #generateConfig(Path)
+     */
+    @Nullable
+    public String generateConfig() {
+        return generateConfig_;
+    }
+
+    /**
+     * Globbing patterns describing paths to include in the analysis.
+     * <p>
+     * Useful in combination with {@link #excludes() excludes} patterns.
      *
      * @param patterns one or more patterns
      * @return this operation instance
@@ -942,8 +1013,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Globbing patterns describing paths to include in the analysis. Useful in
-     * combination with {@link #excludes() excludes} patterns.
+     * Globbing patterns describing paths to include in the analysis.
+     * <p>
+     * Useful in combination with {@link #excludes() excludes} patterns.
      *
      * @param patterns a collection of patterns
      * @return this operation instance
@@ -968,7 +1040,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Input paths to analyze. If not specified the current working directory is used.
+     * Input paths to analyze.
+     * <p>
+     * If not specified the current working directory is used.
      *
      * @param paths the paths
      * @return this operation instance
@@ -988,7 +1062,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Input paths to analyze. If not specified the current working directory is used.
+     * Input paths to analyze
+     * <p>
+     * If not specified the current working directory is used.
      *
      * @param paths one or more paths
      * @return this operation instance
@@ -1008,7 +1084,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Input paths to analyze. If not specified the current working directory is used.
+     * Input paths to analyze.
+     * <p>
+     * If not specified the current working directory is used.
      *
      * @param paths one or more paths
      * @return this operation instance
@@ -1028,7 +1106,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Input paths to analyze. If not specified the current working directory is used.
+     * Input paths to analyze.
+     * <p>
+     * If not specified the current working directory is used.
      *
      * @param paths one or more paths
      * @return this operation instance
@@ -1057,7 +1137,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Input paths to analyze. If not specified the current working directory is used.
+     * Input paths to analyze.
+     * <p>
+     * If not specified the current working directory is used.
      *
      * @param paths the paths
      * @return this operation instance
@@ -1077,7 +1159,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * Input paths to analyze. If not specified the current working directory is used.
+     * Input paths to analyze.
+     * <p>
+     * If not specified the current working directory is used.
      *
      * @param paths the paths
      * @return this operation instance
@@ -1097,13 +1181,15 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * EXPERIMENTAL: Use a custom JDK home directory to include into the
-     * classpath.
+     * Use a custom JDK home directory to include into the classpath.
      *
      * @param path the JDK home directory path
      * @return this operation instance
      * @throws NullPointerException     if {@code path} is {@code null}
      * @throws IllegalArgumentException if {@code path} is blank
+     * @see #jdkHome(File)
+     * @see #jdkHome(Path)
+     * @see #jdkHome()
      */
     public DetektOperation jdkHome(String path) {
         jdkHome_ = TextTools.requireNotBlank(path, "jdkHome");
@@ -1111,57 +1197,83 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     }
 
     /**
-     * EXPERIMENTAL: Target version of the generated JVM bytecode that was
-     * generated during compilation and is now being used for type resolution
+     * Use a custom JDK home directory to include into the classpath.
+     *
+     * @param path the JDK home directory path
+     * @return this operation instance
+     * @throws NullPointerException if {@code path} is {@code null}
+     * @see #jdkHome(String)
+     * @see #jdkHome(Path)
+     * @see #jdkHome()
+     */
+    public DetektOperation jdkHome(File path) {
+        ObjectTools.requireNonNull(path, "jdkHome");
+        return jdkHome(path.getAbsolutePath());
+    }
+
+    /**
+     * Use a custom JDK home directory to include into the classpath.
+     *
+     * @param path the JDK home directory path
+     * @return this operation instance
+     * @throws NullPointerException if {@code path} is {@code null}
+     * @see #jdkHome(String)
+     * @see #jdkHome(File)
+     * @see #jdkHome()
+     */
+    public DetektOperation jdkHome(Path path) {
+        ObjectTools.requireNonNull(path, "jdkHome");
+        return jdkHome(path.toFile().getAbsolutePath());
+    }
+
+    /**
+     * Retrieves the JDK home directory.
+     *
+     * @return the JDK home directory path
+     * @see #jdkHome(String)
+     * @see #jdkHome(File)
+     * @see #jdkHome(Path)
+     */
+    @Nullable
+    public String jdkHome() {
+        return jdkHome_;
+    }
+
+    /**
+     * Target version of the generated JVM bytecode that was generated during compilation and is now being used for
+     * type resolution.
      * <p>
      * Default: 1.8
      *
      * @param target the target version
      * @return this operation instance
-     * @throws NullPointerException     if {@code target} is {@code null}
-     * @throws IllegalArgumentException if {@code target} is blank
+     * @throws NullPointerException if {@code target} is {@code null}
      */
-    public DetektOperation jvmTarget(String target) {
-        jvmTarget_ = TextTools.requireNotBlank(target, "jvmTarget");
+    public DetektOperation jvmTarget(JvmTarget target) {
+        jvmTarget_ = ObjectTools.requireNonNull(target, "jvmTarget");
         return this;
     }
 
     /**
-     * EXPERIMENTAL: Compatibility mode for Kotlin language version X.Y,
-     * reports errors for all language features that came out later.
-     * <p>
-     * Possible Values: [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1]
+     * Compatibility mode for Kotlin language version X.Y, reports errors for all language features
+     * that came out later.
      *
      * @param version the version
      * @return this operation instance
-     * @throws NullPointerException     if {@code version} is {@code null}
-     * @throws IllegalArgumentException if {@code version} is blank
+     * @throws NullPointerException if {@code version} is {@code null}
      */
-    public DetektOperation languageVersion(String version) {
-        languageVersion_ = TextTools.requireNotBlank(version, "languageVersion");
+    public DetektOperation languageVersion(@Nullable LanguageVersion version) {
+        languageVersion_ = version;
         return this;
     }
 
     /**
-     * Return exit code 0 only when found issues count does not exceed
-     * specified issues count.
-     *
-     * @param max the issues count, must be &gt;= 0
-     * @return this operation instance
-     * @throws IllegalArgumentException if {@code max} is negative
-     */
-    public DetektOperation maxIssues(int max) {
-        if (max < 0) {
-            throw new IllegalArgumentException("maxIssues must be >= 0");
-        }
-        maxIssues_ = max;
-        return this;
-    }
-
-    /**
-     * Enables parallel compilation and analysis of source files. Do some
-     * benchmarks first before enabling this flag. Heuristics show performance
-     * benefits starting from 2000 lines of Kotlin code.
+     * Enables parallel compilation and analysis of source files.
+     * <p>
+     * Do some benchmarks first before enabling this flag. Heuristics show performance benefits starting from
+     * 000 lines of Kotlin code.
+     * <p>
+     * Default is {@code false}
      *
      * @param parallel {@code true} or {@code false}
      * @return this operation instance
@@ -1325,5 +1437,53 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             // bld idiom: consume the flag so BaseProject doesn't see it as unknown
             args.remove(0);
         }
+    }
+
+    private List<File> resolveDetektJars() {
+        var originalJars = ObjectTools.requireNonNull(project_, "project").extensionClasspathJars(
+                new Dependency("dev.detekt", "detekt-cli"));
+
+        if (originalJars == null || originalJars.isEmpty()) {
+            return List.of();
+        }
+
+        var libDir = project_.libBldDirectory();
+        var libFiles = Optional.ofNullable(libDir.listFiles())
+                .stream()
+                .flatMap(Arrays::stream)
+                .filter(f -> f.isFile() && f.getName().endsWith(".jar") && !f.getName().endsWith("-sources.jar"))
+                .toList();
+
+        var libFileNames = libFiles.stream().map(File::getName).collect(Collectors.toSet());
+
+        var libByArtifactId = libFiles.stream()
+                .collect(Collectors.groupingBy(
+                        f -> ARTIFACT_ID_PATTERN.matcher(f.getName()).replaceAll(""),
+                        Collectors.maxBy(Comparator.comparing(File::getName))));
+
+        var detektJars = new ArrayList<>(originalJars);
+
+        for (int i = 0; i < originalJars.size(); i++) {
+            var detektJar = originalJars.get(i);
+            if (detektJar == null) {
+                continue;
+            }
+            if (!libFileNames.contains(detektJar.getName())) {
+                String artifactId = ARTIFACT_ID_PATTERN.matcher(detektJar.getName()).replaceAll("");
+                var replacement = libByArtifactId.getOrDefault(artifactId,
+                        Optional.empty()).orElse(null);
+                if (replacement != null) {
+                    if (logger.isLoggable(Level.INFO) && !silent()) {
+                        logger.info("Replacing: " + detektJar.getName() + " -> " + replacement.getName());
+                    }
+                    detektJars.set(i, replacement);
+                } else {
+                    if (logger.isLoggable(Level.WARNING) && !silent()) {
+                        logger.warning(detektJar.getName() + " is missing. No replacement found.");
+                    }
+                }
+            }
+        }
+        return detektJars;
     }
 }
