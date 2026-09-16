@@ -10,10 +10,10 @@ on:
 
 jobs:
   clear-cache:
-    if: github.event.inputs.confirm == 'yes'
+    if: ${{ inputs.confirm == 'yes' }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
     runs-on: ${{ matrix.os }}
     permissions:
       actions: write
@@ -21,7 +21,14 @@ jobs:
       - name: Purge bld caches for ${{ runner.os }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OS_NAME: ${{ runner.os }}
         run: |
-          echo "Purging all caches with key ${{ runner.os }}-bld-"
-          gh cache delete --all --key "${{ runner.os }}-bld-"
-          echo "Done for ${{ runner.os }}"
+          echo "Purging all caches with prefix $OS_NAME-bld-"
+          
+          # List all cache keys with that prefix and delete them
+          gh cache list --key "$OS_NAME-bld-" --limit 100 --json id,key | jq -r '.[].id' | while read id; do
+            echo "Deleting cache id $id"
+            gh cache delete $id
+          done
+          
+          echo "Done for $OS_NAME"
