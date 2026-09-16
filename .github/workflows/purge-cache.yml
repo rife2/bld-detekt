@@ -13,22 +13,20 @@ jobs:
     if: ${{ inputs.confirm == 'yes' }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     permissions:
       actions: write
     steps:
       - name: Purge bld caches for ${{ runner.os }}
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OS_NAME: ${{ runner.os }}
         run: |
           echo "Purging all caches with prefix $OS_NAME-bld-"
-          
-          # List all cache keys with that prefix and delete them
-          gh cache list --key "$OS_NAME-bld-" --limit 100 --json id,key | jq -r '.[].id' | while read id; do
+          gh cache list --key "$OS_NAME-bld-" --limit 100 | cut -f1 | while read id; do
             echo "Deleting cache id $id"
             gh cache delete $id
           done
-          
           echo "Done for $OS_NAME"
