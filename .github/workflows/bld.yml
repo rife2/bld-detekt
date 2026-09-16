@@ -41,8 +41,16 @@ jobs:
           key: ${{ runner.os }}-bld-java${{ matrix.java-version }}-lib
 
       - name: Run Detekt [examples]
+        id: examples
         working-directory: examples
+        continue-on-error: true
         run: ./bld --auto-download-purge clean compile test-ci
+
+      - name: Verify examples failed as expected
+        if: steps.examples.outcome == 'success'
+        run: |
+          echo "::error::examples/ was expected to fail but succeeded"
+          exit 1
 
       - name: Compile source code
         run: ./bld clean compile
