@@ -11,22 +11,25 @@ on:
 jobs:
   clear-cache:
     if: ${{ inputs.confirm == 'yes' }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     permissions:
       actions: write
     steps:
-      - name: Purge bld caches for ${{ runner.os }}
-        shell: bash
+      - uses: actions/checkout@v4
+
+      - name: Purge all bld caches
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OS_NAME: ${{ runner.os }}
+        shell: bash
         run: |
-          echo "Purging all caches with prefix $OS_NAME-bld-"
-          gh cache list --key "$OS_NAME-bld-" --limit 100 | cut -f1 | while read id; do
-            echo "Deleting cache id $id"
-            gh cache delete $id
+          set -x
+          for PREFIX in Linux-bld- Windows-bld- macOS-bld-; do
+            echo "--- Purging $PREFIX ---"
+            # list returns "id  key  size  created"
+            gh cache list --key "$PREFIX" --limit 1000 | cut -f1 | while read -r id; do
+              [ -z "$id" ] && continue
+              echo "Deleting $id"
+              gh cache delete "$id" || true
+            done
           done
-          echo "Done for $OS_NAME"
+          echo "Done"
