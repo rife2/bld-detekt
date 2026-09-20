@@ -265,7 +265,7 @@ class DetektOperationTests {
         void checkAllParameters() throws IOException {
             var args = Files.readAllLines(Paths.get("src", "test", "resources", "detekt-args.txt"));
 
-            assertThat(args).isNotEmpty();
+            assertThat(args).as("arguments should not be empty").isNotEmpty();
 
             var op = new DetektOperation()
                     .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",

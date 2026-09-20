@@ -100,7 +100,7 @@ public class DetektOperationBuild extends Project {
         if (ExecOperation.isLinux()) {
             new ExecOperation()
                     .fromProject(this)
-                    .command("scripts/cliargs.sh")
+                    .command(IOTools.resolveFile(this.workDirectory(), "scripts", "cliargs.sh").getAbsolutePath())
                     .execute();
         }
 
