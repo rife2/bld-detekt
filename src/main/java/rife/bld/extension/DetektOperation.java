@@ -21,11 +21,10 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import rife.bld.BaseProject;
 import rife.bld.dependencies.Dependency;
+import rife.bld.dependencies.Repository;
+import rife.bld.dependencies.VersionNumber;
 import rife.bld.extension.detekt.*;
-import rife.bld.extension.tools.CollectionTools;
-import rife.bld.extension.tools.ObjectTools;
-import rife.bld.extension.tools.PathTools;
-import rife.bld.extension.tools.TextTools;
+import rife.bld.extension.tools.*;
 import rife.bld.operations.AbstractProcessOperation;
 import rife.bld.operations.exceptions.ExitStatusException;
 
@@ -33,11 +32,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Performs static code analysis with <a href="https://detekt.dev/">Detekt</a>.
@@ -53,7 +53,6 @@ import java.util.stream.Collectors;
 public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
     private static final String ARG_CREATE_BASELINE = "--create-baseline";
-    private static final Pattern ARTIFACT_ID_PATTERN = Pattern.compile("-\\d+.*\\.jar$");
     private static final String BASELINE = "baseline";
     private static final String CLASS_PATH = "classPath";
     private static final String CONFIG = "config";
@@ -77,7 +76,6 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     private @Nullable String configResource_;
     private boolean createBaseline_;
     private boolean debug_;
-    private @Nullable String detektClassPathJars_;
     private boolean disableDefaultRuleSets_;
     private Severity failOnSeverity_ = Severity.ERROR;
     private @Nullable String generateConfig_;
@@ -98,12 +96,6 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     @Override
     public void execute() throws IOException, InterruptedException, ExitStatusException {
         ObjectTools.requireNonNull(project_, "project");
-        if (TextTools.isBlank(detektClassPathJars_)) {
-            if (logger.isLoggable(Level.SEVERE) && !silent()) {
-                logger.severe("No Detekt JARs found in: " + project_.libBldDirectory());
-            }
-            throw new ExitStatusException(ExitStatusException.EXIT_FAILURE);
-        }
 
         if (createBaseline_) {
             ObjectTools.requireNonNull(baseline_, BASELINE);
@@ -133,11 +125,20 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     @Override
     protected List<String> executeConstructProcessCommandList() {
         final List<String> args = new ArrayList<>(50);
-
         if (project_ != null) {
             args.add(javaTool());
             args.add("-cp");
-            args.add(PathTools.joinClasspath(resolveDetektJars()));
+
+            var sandbox = new Sandbox("bld-detekt", project_);
+            var pluginDir = sandbox.downloadDependencies(
+                    List.of(new Dependency("dev.detekt", "detekt-cli",
+                            new VersionNumber(2, 0, 0, "alpha.6"))),
+                    List.of(Repository.MAVEN_CENTRAL)
+            );
+
+            var jarList = IOTools.findFilesByExtensions(pluginDir, ".jar");
+            args.add(PathTools.joinClasspath(jarList));
+
             args.add("dev.detekt.cli.Main");
 
             if (allRules_) {
@@ -295,9 +296,6 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         if (excludes_.isEmpty()) {
             excludes(".*/build/.*", ".*/resources/.*");
         }
-        detektClassPathJars_ = PathTools.joinClasspath(
-                project_.extensionClasspathJars("dev.detekt", "detekt-cli")
-        );
 
         parseArguments(project_.arguments());
 
@@ -1437,53 +1435,5 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             // bld idiom: consume the flag so BaseProject doesn't see it as unknown
             args.remove(0);
         }
-    }
-
-    private List<File> resolveDetektJars() {
-        var originalJars = ObjectTools.requireNonNull(project_, "project").extensionClasspathJars(
-                new Dependency("dev.detekt", "detekt-cli"));
-
-        if (originalJars == null || originalJars.isEmpty()) {
-            return List.of();
-        }
-
-        var libDir = project_.libBldDirectory();
-        var libFiles = Optional.ofNullable(libDir.listFiles())
-                .stream()
-                .flatMap(Arrays::stream)
-                .filter(f -> f.isFile() && f.getName().endsWith(".jar") && !f.getName().endsWith("-sources.jar"))
-                .toList();
-
-        var libFileNames = libFiles.stream().map(File::getName).collect(Collectors.toSet());
-
-        var libByArtifactId = libFiles.stream()
-                .collect(Collectors.groupingBy(
-                        f -> ARTIFACT_ID_PATTERN.matcher(f.getName()).replaceAll(""),
-                        Collectors.maxBy(Comparator.comparing(File::getName))));
-
-        var detektJars = new ArrayList<>(originalJars);
-
-        for (int i = 0; i < originalJars.size(); i++) {
-            var detektJar = originalJars.get(i);
-            if (detektJar == null) {
-                continue;
-            }
-            if (!libFileNames.contains(detektJar.getName())) {
-                String artifactId = ARTIFACT_ID_PATTERN.matcher(detektJar.getName()).replaceAll("");
-                var replacement = libByArtifactId.getOrDefault(artifactId,
-                        Optional.empty()).orElse(null);
-                if (replacement != null) {
-                    if (logger.isLoggable(Level.INFO) && !silent()) {
-                        logger.info("Replacing: " + detektJar.getName() + " -> " + replacement.getName());
-                    }
-                    detektJars.set(i, replacement);
-                } else {
-                    if (logger.isLoggable(Level.WARNING) && !silent()) {
-                        logger.warning(detektJar.getName() + " is missing. No replacement found.");
-                    }
-                }
-            }
-        }
-        return detektJars;
     }
 }

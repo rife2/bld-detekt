@@ -41,18 +41,18 @@ public class DetektOperationBuild extends Project {
         downloadSources = true;
         autoDownloadPurge = true;
 
-        repositories = List.of(MAVEN_CENTRAL, CENTRAL_SNAPSHOTS, RIFE2_RELEASES, RIFE2_SNAPSHOTS);
+        repositories = List.of(MAVEN_LOCAL, MAVEN_CENTRAL, CENTRAL_SNAPSHOTS, RIFE2_RELEASES, RIFE2_SNAPSHOTS);
 
         var junit = version(6, 1, 3);
         scope(compile)
                 .include(dependency("com.uwyn.rife2", "bld-extensions-tools",
-                        version(1, 3, 0)))
-                .include(dependency("com.uwyn.rife2", "bld", version(3, 0, 1)))
-                .include(dependency("dev.detekt", "detekt-cli", "2.0.0-alpha.6"));
+                        version(1, 4, 0, "SNAPSHOT")))
+                .include(dependency("com.uwyn.rife2", "bld", version(3, 0, 1)));
         scope(provided)
                 .include(dependency("org.jspecify", "jspecify", "1.0.1"))
                 .include(dependency("com.github.spotbugs", "spotbugs-annotations",
-                        version(4, 10, 4)));
+                        version(4, 10, 4)))
+                .include(dependency("dev.detekt", "detekt-cli", "2.0.0-alpha.6"));
         scope(test)
                 .include(dependency("com.uwyn.rife2", "bld-testing-helpers",
                         version(1, 1, 1)))
