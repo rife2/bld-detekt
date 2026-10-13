@@ -51,7 +51,7 @@ public class DetektOperationBuild extends Project {
         scope(provided)
                 .include(dependency("org.jspecify", "jspecify", "1.0.1"))
                 .include(dependency("com.github.spotbugs", "spotbugs-annotations",
-                        version(4, 10, 4)))
+                        version(4, 10, 5)))
                 .include(dependency("dev.detekt", "detekt-cli", "2.0.0-alpha.6"));
         scope(test)
                 .include(dependency("com.uwyn.rife2", "bld-testing-helpers",
