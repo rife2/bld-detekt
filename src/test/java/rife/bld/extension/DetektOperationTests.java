@@ -29,6 +29,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import rife.bld.blueprints.BaseProjectBlueprint;
+import rife.bld.dependencies.VersionNumber;
 import rife.bld.extension.detekt.*;
 import rife.bld.operations.exceptions.ExitStatusException;
 import rife.bld.testing.LoggingExtension;
@@ -581,6 +582,31 @@ class DetektOperationTests {
                 assertThat(op.plugins()).contains(foo, bar);
             }
         }
+
+        @Nested
+        @DisplayName("Version Tests")
+        class VersionTests {
+
+            @Test
+            void defaultVersion() {
+                assertThat(new DetektOperation().version()).isEqualTo(DetektOperation.DEFAULT_VERSION);
+            }
+
+            @Test
+            void versionAsString() {
+                var op = new DetektOperation();
+                op.version("2.0.0-alpha.5");
+                assertThat(op.version()).isEqualTo(new VersionNumber(2, 0, 0, "alpha.5"));
+            }
+
+            @Test
+            void versionAsVersionNumber() {
+                var version = new VersionNumber(2, 0, 0, "alpha.5");
+                var op = new DetektOperation();
+                op = op.version(version);
+                assertThat(op.version()).isSameAs(version);
+            }
+        }
     }
 
     @Nested
@@ -647,6 +673,18 @@ class DetektOperationTests {
         }
 
         @Test
+        void processCommandListWithDefaultVersion() {
+            var op = new DetektOperation()
+                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"));
+
+            var commandList = op.executeConstructProcessCommandList();
+            var classpath = commandList.get(commandList.indexOf("-cp") + 1);
+
+            assertThat(classpath).contains("detekt-cli-" + DetektOperation.DEFAULT_VERSION);
+        }
+
+        @Test
         void processCommandListWithPathAndStringFlags() {
             var op = new DetektOperation()
                     .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
@@ -686,6 +724,20 @@ class DetektOperationTests {
                     "--report", "checkstyle:/reports/detekt.txt",
                     "--report", "html:/reports/detekt.html"
             );
+        }
+
+        @Test
+        void processCommandListWithVersion() {
+            var version = new VersionNumber(2, 0, 0, "alpha.5");
+            var op = new DetektOperation()
+                    .fromProject(new BaseProjectBlueprint(new File("examples"), "com.example",
+                            "example", "Example"))
+                    .version(version);
+
+            var commandList = op.executeConstructProcessCommandList();
+            var classpath = commandList.get(commandList.indexOf("-cp") + 1);
+
+            assertThat(classpath).contains("detekt-cli-" + version);
         }
     }
 
@@ -1002,6 +1054,21 @@ class DetektOperationTests {
                     .as("array has null element").isInstanceOf(NullPointerException.class);
             assertThatThrownBy(() -> new DetektOperation().report((Report[]) null))
                     .as("array is null").isInstanceOf(NullPointerException.class);
+        }
+
+        @ParameterizedTest
+        @EmptySource
+        void versionWithEmpty(String arg) {
+            assertThatThrownBy(() -> new DetektOperation().version(arg))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        void versionWithNull() {
+            assertThatThrownBy(() -> new DetektOperation().version((String) null))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new DetektOperation().version((VersionNumber) null))
+                    .isInstanceOf(NullPointerException.class);
         }
     }
 

@@ -52,6 +52,13 @@ import java.util.logging.Logger;
 @NullMarked
 public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
+    /**
+     * The default detekt version.
+     * <p>
+     * Currently: 2.0.0-alpha.6
+     */
+    public static final VersionNumber DEFAULT_VERSION = new VersionNumber(2, 0, 0, "alpha.6");
+
     private static final String ARG_CREATE_BASELINE = "--create-baseline";
     private static final String BASELINE = "baseline";
     private static final String CLASS_PATH = "classPath";
@@ -84,6 +91,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     private @Nullable LanguageVersion languageVersion_;
     private boolean parallel_;
     private @Nullable BaseProject project_;
+    private VersionNumber version_ = DEFAULT_VERSION;
 
     /**
      * Performs the operation.
@@ -131,8 +139,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
             var sandbox = new Sandbox("bld-detekt", project_);
             var pluginDir = sandbox.downloadDependencies(
-                    List.of(new Dependency("dev.detekt", "detekt-cli",
-                            new VersionNumber(2, 0, 0, "alpha.6"))),
+                    List.of(new Dependency("dev.detekt", "detekt-cli", version_)),
                     List.of(Repository.MAVEN_CENTRAL)
             );
 
@@ -1422,6 +1429,60 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         ObjectTools.requireNotEmpty(reports, "report");
         report_.addAll(List.of(reports));
         return this;
+    }
+
+    /**
+     * Sets the detekt version to use.
+     * <p>
+     * Default is {@link #DEFAULT_VERSION}
+     * <p>
+     * <b>Warning:</b> Only detekt {@code 2.x} releases are supported. The operation resolves
+     * {@code dev.detekt:detekt-cli}, launches {@code dev.detekt.cli.Main} and passes CLI options that
+     * may differ between releases (including alpha builds), so other versions may fail or behave
+     * unexpectedly.
+     *
+     * @param version the version
+     * @return this operation instance
+     * @throws NullPointerException if {@code version} is {@code null}
+     * @see #version(String)
+     * @see #version()
+     */
+    public DetektOperation version(VersionNumber version) {
+        version_ = ObjectTools.requireNonNull(version, "version");
+        return this;
+    }
+
+    /**
+     * Sets the detekt version to use.
+     * <p>
+     * Default is {@link #DEFAULT_VERSION}
+     * <p>
+     * <b>Warning:</b> Only detekt {@code 2.x} releases are supported. The operation resolves
+     * {@code dev.detekt:detekt-cli}, launches {@code dev.detekt.cli.Main} and passes CLI options that
+     * may differ between releases (including alpha builds), so other versions may fail or behave
+     * unexpectedly.
+     *
+     * @param version the version, e.g. {@code 2.0.0-alpha.6}
+     * @return this operation instance
+     * @throws NullPointerException     if {@code version} is {@code null}
+     * @throws IllegalArgumentException if {@code version} is empty or blank
+     * @see #version(VersionNumber)
+     * @see #version()
+     */
+    public DetektOperation version(String version) {
+        version_ = VersionNumber.parse(TextTools.requireNotBlank(version, "version"));
+        return this;
+    }
+
+    /**
+     * Retrieves the detekt version.
+     *
+     * @return the version
+     * @see #version(VersionNumber)
+     * @see #version(String)
+     */
+    public VersionNumber version() {
+        return version_;
     }
 
     private void parseArguments(List<String> args) {

@@ -58,6 +58,20 @@ To generate the baseline, use:
 
 Please check the [DetektOperation documentation](https://rife2.github.io/bld-detekt/rife/bld/extension/DetektOperation.html#method-summary) for all available configuration options.
 
+## Setting the Detekt Version
+
+By default, the extension uses
+[`DetektOperation.DEFAULT_VERSION`](https://rife2.github.io/bld-detekt/rife/bld/extension/DetektOperation.html#DEFAULT_VERSION).
+You can override this to target a specific Detekt release with the `version` method:
+
+```java
+new DetektOperation()
+    .fromProject(this)
+    .version("2.0.0-alpha.6")                           // String form
+    // .version(new VersionNumber(2, 0, 0, "alpha.6"))  // VersionNumber form
+    .execute();
+```
+
 ## Template Project
 
 There is also a [Kotlin Template Project](https://github.com/rife2/kotlin-bld-example) with support for [Dokka](https://github.com/rife2/bld-dokka) and the Detekt extensions.
