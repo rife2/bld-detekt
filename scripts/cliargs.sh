@@ -1,6 +1,6 @@
 #!/bin/bash
 
-java -cp "lib/provided/*" dev.detekt.cli.Main --help |\
+java -cp "examples/lib/.sandbox/bld-detekt/*" dev.detekt.cli.Main --help |\
 grep "^    --.*" |\
 sed -e "s/    //" -e "s/, .*//" -e '/version/d' -e '/help/d' |\
 sort |\

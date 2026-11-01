@@ -46,13 +46,13 @@ public class DetektOperationBuild extends Project {
         var junit = version(6, 1, 3);
         scope(compile)
                 .include(dependency("com.uwyn.rife2", "bld-extensions-tools",
-                        version(1, 4, 0)))
+                        version(1, 5, 0)))
                 .include(dependency("com.uwyn.rife2", "bld", version(3, 0, 1)));
         scope(provided)
                 .include(dependency("org.jspecify", "jspecify", "1.0.1"))
                 .include(dependency("com.github.spotbugs", "spotbugs-annotations",
-                        version(4, 10, 5)))
-                .include(dependency("dev.detekt", "detekt-cli", "2.0.0-alpha.6"));
+                        version(4, 10, 5)));
+
         scope(test)
                 .include(dependency("com.uwyn.rife2", "bld-testing-helpers",
                         version(1, 1, 1)))
