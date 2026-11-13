@@ -23,8 +23,8 @@ To check all Kotlin source code located in the project, add the following to you
 @BuildCommand(summary = "Checks source with Detekt")
 public void detekt() throws ExitStatusException, IOException, InterruptedException {
     new DetektOperation()
-        .fromProject(this)
-        .execute();
+            .fromProject(this)
+            .execute();
 }
 ```
 
@@ -43,15 +43,20 @@ To use a Detekt baseline, add the following to your build file:
 public void detekt() throws ExitStatusException, IOException, InterruptedException {
     new DetektOperation()
         .fromProject(this)
-        .baseline("detekt-baseline.xml")
         .execute();
 }
 ```
 
-To generate the baseline, use:
+To generate the baseline, run:
 
 ```console
 ./bld compile detekt --create-baseline
+```
+
+`fromProject(this)` consumes `--create-baseline` and defaults to `detekt-baseline.xml` in the work directory. To use a different file, call `baseline(...)`:
+
+```java
+.baseline("lib/detekt-baseline.xml")
 ```
 
 - [View Examples Project](https://github.com/rife2/bld-detekt/tree/main/examples)
@@ -60,15 +65,16 @@ To generate the baseline, use:
 
 By default, the extension downloads the version defined by the
 [`DEFAULT_VERSION`](https://rife2.github.io/bld-detekt/rife/bld/extension/DetektOperation.html#DEFAULT_VERSION)
-constants.
+constant.
 
-You can override this to target a specific Detekt release with the `version` method:
+You can override this to target a specific release with the `version` method.
+Only Detekt `2.x` releases are supported:
 
 ```java
 new DetektOperation()
     .fromProject(this)
-    .version("2.0.0-alpha.6")                           // String form
-    // .version(new VersionNumber(2, 0, 0, "alpha.6"))  // VersionNumber form
+    .version("2.0.0-alpha.0") // String form
+// .version(new VersionNumber(2, 0, 0, "alpha.7"))  // VersionNumber form
     .execute();
 ```
 
