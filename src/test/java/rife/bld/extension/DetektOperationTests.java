@@ -235,14 +235,14 @@ class DetektOperationTests {
         void configResourceAsFile() {
             var op = new DetektOperation();
             op.configResource(foo);
-            assertThat(op.configResource()).isEqualTo(foo.getAbsolutePath());
+            assertThat(op.configResource()).isEqualTo("foo");
         }
 
         @Test
         void configResourceAsPath() {
             var op = new DetektOperation();
             op = op.configResource(bar.toPath());
-            assertThat(op.configResource()).isEqualTo(bar.getAbsolutePath());
+            assertThat(op.configResource()).isEqualTo("bar");
         }
 
         @Test
@@ -666,7 +666,7 @@ class DetektOperationTests {
             assertThat(commandList).contains("--input", input2.getAbsolutePath());
             assertThat(commandList).contains("--plugins", plugin1.getAbsolutePath());
             assertThat(commandList).contains("--plugins", plugin2.getAbsolutePath());
-            assertThat(commandList).contains("--config", config1.getAbsolutePath() + ";" + config2.getAbsolutePath());
+            assertThat(commandList).contains("--config", config1.getAbsolutePath() + File.pathSeparator + config2.getAbsolutePath());
             assertThat(commandList).contains("--classpath", cp1.getAbsolutePath() + File.pathSeparator + cp2.getAbsolutePath());
             assertThat(commandList).contains("--includes", ".*Include.*,.*Keep.*");
             assertThat(commandList).contains("--excludes", ".*/build/.*,.*/resources/.*,.*Exclude.*");

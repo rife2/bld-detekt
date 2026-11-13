@@ -35,7 +35,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -119,7 +119,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
         if (successful_ && logger.isLoggable(Level.INFO) && !silent()) {
             if (createBaseline_) {
                 logger.info("Detekt baseline generated successfully: "
-                        + "file://" + new File(Objects.requireNonNull(baseline_)).toURI().getPath());
+                        + "file://" + new File(ObjectTools.requireNonNull(baseline_, BASELINE)).toURI().getPath());
             } else {
                 logger.info("Detekt operation finished successfully.");
             }
@@ -132,12 +132,12 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     @Override
     protected List<String> executeConstructProcessCommandList() {
-        final List<String> args = new ArrayList<>(50);
+        final var args = new ArrayList<String>(50);
         if (project_ != null) {
             args.add(javaTool());
             args.add("-cp");
 
-            var sandbox = new Sandbox("bld-detekt", project_);
+            var sandbox = new Sandbox("bld-detekt", project_, silent());
             var pluginDir = sandbox.downloadDependencies(
                     List.of(new Dependency("dev.detekt", "detekt-cli", version_)),
                     List.of(Repository.MAVEN_CENTRAL)
@@ -179,7 +179,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             }
             if (!config_.isEmpty()) {
                 args.add("--config");
-                args.add(String.join(";", config_.stream().map(File::getAbsolutePath).toList()));
+                args.add(String.join(File.pathSeparator, config_.stream().map(File::getAbsolutePath).toList()));
             }
             if (TextTools.isNotBlank(configResource_)) {
                 args.add("--config-resource");
@@ -236,7 +236,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
             if (!report_.isEmpty()) {
                 report_.forEach(it -> {
                     args.add("--report");
-                    args.add(it.id().name().toLowerCase() + ":" + it.path());
+                    args.add(it.id().name().toLowerCase(Locale.ROOT) + ":" + it.path());
                 });
             }
             if (failOnSeverity_ != Severity.ERROR) {
@@ -254,9 +254,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
                     var javaCmd = args.get(0);
                     var argFileArgs = args.subList(1, args.size());
                     var argFile = Files.createTempFile("detekt-", ".args");
-                    var lines = argFileArgs.stream()
-                            .map(s -> s.contains(" ") ? "\"" + s.replace("\"", "\\\"") + "\"" : s)
-                            .toList();
+                    var lines = argFileArgs.stream().map(PathTools::quoteArgForArgFile).toList();
                     Files.write(argFile, lines);
                     argFile.toFile().deleteOnExit();
                     if (logger.isLoggable(Level.FINE) && !silent()) {
@@ -279,12 +277,13 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * <p>
      * Sets the following:
      * <ul>
-     *     <li>The {@link #baseline baseline} to {@code detekt-baseline.xml}, if it exists in the
-     *     project's work directory</li>
+     *     <li>Parses the project {@link BaseProject#arguments() arguments}, consuming the
+     *     {@code --create-baseline} flag if present</li>
+     *     <li>The {@link #baseline baseline} to {@code detekt-baseline.xml} in the project's work
+     *     directory, when the file exists or when {@link #createBaseline(boolean) baseline creation}
+     *     was requested and no baseline has already been set</li>
      *     <li>The {@link #excludes excludes} to exclude {@code build} and {@code resources} directories,
      *     if not already set</li>
-     *     <li>The Detekt classpath from JARS in the {@link BaseProject#libBldDirectory() project's bld lib
-     *     directory}</li>
      * </ul>
      *
      * @param project the project to configure the operation from
@@ -294,17 +293,17 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
     @Override
     public DetektOperation fromProject(BaseProject project) {
         project_ = ObjectTools.requireNonNull(project, "fromProject");
+
+        // Parse arguments first so that --create-baseline is reflected when resolving the baseline path.
+        parseArguments(project_.arguments());
+
         var baseline = new File(project.workDirectory(), "detekt-baseline.xml");
-        if (baseline.exists()) {
+        if (baseline_ == null && (baseline.exists() || createBaseline_)) {
             baseline_ = baseline.getAbsolutePath();
-        } else {
-            baseline_ = null;
         }
         if (excludes_.isEmpty()) {
             excludes(".*/build/.*", ".*/resources/.*");
         }
-
-        parseArguments(project_.arguments());
 
         return this;
     }
@@ -765,6 +764,8 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
     /**
      * Path to the config resource on detekt's classpath ({@code path/to/config.yml}).
+     * <p>
+     * The argument is treated as a classpath resource name, not a filesystem path.
      *
      * @param resource the config resource path
      * @return this operation instance
@@ -781,6 +782,9 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
 
     /**
      * Path to the config resource on detekt's classpath ({@code path/to/config.yml}).
+     * <p>
+     * The argument is treated as a classpath resource name, not a filesystem path. The file's path is
+     * passed through unchanged; it is <b>not</b> converted to an absolute path.
      *
      * @param resource the config resource path
      * @return this operation instance
@@ -791,11 +795,14 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     public DetektOperation configResource(File resource) {
         ObjectTools.requireNonNull(resource, "configResource");
-        return configResource(resource.getAbsolutePath());
+        return configResource(resource.getPath());
     }
 
     /**
      * Path to the config resource on detekt's classpath ({@code path/to/config.yml}).
+     * <p>
+     * The argument is treated as a classpath resource name, not a filesystem path. The path is
+     * passed through unchanged; it is <b>not</b> converted to an absolute path.
      *
      * @param resource the config resource path
      * @return this operation instance
@@ -806,7 +813,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      */
     public DetektOperation configResource(Path resource) {
         ObjectTools.requireNonNull(resource, "configResource");
-        return configResource(resource.toFile().getAbsolutePath());
+        return configResource(resource.toString());
     }
 
     /**
@@ -1265,7 +1272,6 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      *
      * @param version the version
      * @return this operation instance
-     * @throws NullPointerException if {@code version} is {@code null}
      */
     public DetektOperation languageVersion(@Nullable LanguageVersion version) {
         languageVersion_ = version;
@@ -1276,7 +1282,7 @@ public class DetektOperation extends AbstractProcessOperation<DetektOperation> {
      * Enables parallel compilation and analysis of source files.
      * <p>
      * Do some benchmarks first before enabling this flag. Heuristics show performance benefits starting from
-     * 000 lines of Kotlin code.
+     * 2000 lines of Kotlin code.
      * <p>
      * Default is {@code false}
      *

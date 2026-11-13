@@ -23,5 +23,20 @@ package rife.bld.extension.detekt;
  * @since 1.0
  */
 public enum ReportId {
-    CHECKSTYLE, HTML, MARKDOWN, SARIF
+    CHECKSTYLE("checkstyle"), HTML("html"), MARKDOWN("markdown"), SARIF("sarif");
+
+    private final String value;
+
+    ReportId(String value) {
+        this.value = value;
+    }
+
+    /**
+     * Returns the detekt report-id value.
+     *
+     * @return the report-id
+     */
+    public String value() {
+        return value;
+    }
 }
